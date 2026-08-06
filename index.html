@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Cumplimiento · Field Force</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#C7000B">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cumplimiento">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --red: #C7000B;
+  --red-dark: #8F0009;
+  --ink: #17181C;
+  --ink-soft: #55565F;
+  --surface: #F4F4F6;
+  --border: #E4E4E8;
+  --white: #FFFFFF;
+  --green: #157F49;
+  --green-bg: #EAF6EF;
+  --amber: #B8790A;
+  --amber-bg: #FBF2E2;
+  --red-bg: #FCEAEA;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--surface);
+  color:var(--ink);
+  -webkit-tap-highlight-color:transparent;
+}
+h1,h2,h3,.num{font-family:'Poppins',system-ui,sans-serif;}
+#app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--white);position:relative;padding-bottom:40px;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  background:linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+  color:#fff; padding:22px 20px 26px; position:relative; overflow:hidden;
+}
+.topbar::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.topbar::before{content:"";position:absolute;right:20px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.topbar .eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.85;font-weight:600;}
+.topbar h1{font-size:20px;margin:4px 0 0;font-weight:700;}
+.backbtn{background:rgba(255,255,255,0.18);border:none;color:#fff;font-size:13px;font-weight:600;padding:7px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;}
+.backbtn:active{background:rgba(255,255,255,0.3);}
+
+/* ---------- generic ---------- */
+.section{padding:18px 20px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;}
+.label-eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);font-weight:600;margin-bottom:6px;}
+input,select,button{font-family:inherit;font-size:15px;}
+input,select{
+  width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--ink);
+}
+input:focus,select:focus{outline:none;border-color:var(--red);}
+button.primary{
+  width:100%;background:var(--red);color:#fff;border:none;border-radius:12px;
+  padding:14px;font-weight:700;font-size:15px;cursor:pointer;transition:transform .1s;
+}
+button.primary:active{transform:scale(0.98);background:var(--red-dark);}
+button.ghost{
+  background:none;border:1.5px solid var(--border);color:var(--ink);border-radius:12px;
+  padding:10px 14px;font-weight:600;cursor:pointer;font-size:13px;
+}
+
+/* ---------- combobox / autocomplete ---------- */
+.combo-wrap{padding:16px 20px 8px;position:relative;}
+.combo-label{font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block;}
+.combo-input-wrap{position:relative;}
+.combo-input-wrap input{padding-right:36px;}
+.combo-caret{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--ink-soft);pointer-events:none;font-size:12px;}
+.combo-list{
+  position:absolute;left:20px;right:20px;top:100%;margin-top:6px;
+  background:var(--white);border:1.5px solid var(--border);border-radius:14px;
+  max-height:320px;overflow-y:auto;box-shadow:0 12px 30px rgba(0,0,0,0.12);z-index:40;
+  display:none;
+}
+.combo-list.open{display:block;}
+.combo-opt{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);}
+.combo-opt:last-child{border-bottom:none;}
+.combo-opt:hover, .combo-opt.hi{background:var(--surface);}
+.combo-opt .n{font-weight:600;font-size:14px;}
+.combo-opt .n mark{background:#FCEAEA;color:var(--red);border-radius:3px;padding:0 1px;}
+.combo-opt .s{font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
+.combo-empty{padding:16px;text-align:center;color:var(--ink-soft);font-size:13px;}
+
+/* ---------- quota card ---------- */
+.quota-card{background:linear-gradient(135deg, var(--ink) 0%, #2B2C33 100%);border:none;color:#fff;}
+.quota-main-row{display:flex;align-items:center;gap:16px;margin-top:6px;}
+.quota-big{font-family:'Poppins';font-weight:800;font-size:30px;line-height:1;}
+.quota-tag{font-size:11px;color:rgba(255,255,255,0.65);margin-top:4px;}
+.quota-div{width:1px;align-self:stretch;background:rgba(255,255,255,0.15);}
+.quota-cats{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.quota-cat-chip{background:rgba(255,255,255,0.1);border-radius:10px;padding:7px 11px;font-size:11.5px;display:flex;flex-direction:column;gap:2px;flex:1;min-width:70px;}
+.quota-cat-chip span{color:rgba(255,255,255,0.65);}
+.quota-cat-chip b{font-family:'Poppins';font-size:15px;}
+
+/* ---------- gauges ---------- */
+.gauge-row{display:flex;justify-content:center;gap:26px;padding:6px 0 2px;}
+.gauge-col{display:flex;flex-direction:column;align-items:center;}
+.gauge-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-soft);margin-top:6px;}
+.gauge-sub{font-size:11px;color:var(--ink-soft);margin-top:1px;text-align:center;}
+.status-pill{
+  display:inline-block;padding:5px 14px;border-radius:20px;font-size:12.5px;font-weight:700;margin-top:14px;
+}
+.pill-green{background:var(--green-bg);color:var(--green);}
+.pill-amber{background:var(--amber-bg);color:var(--amber);}
+.pill-red{background:var(--red-bg);color:var(--red);}
+
+.stat-row{display:flex;gap:10px;margin-top:14px;}
+.stat{flex:1;background:var(--surface);border-radius:12px;padding:10px 12px;text-align:center;}
+.stat .v{font-size:18px;font-weight:800;font-family:'Poppins';}
+.stat .l{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+
+/* ---------- daily form (por categoria) ---------- */
+.fieldlabel{font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;display:block;}
+.cat-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.cat-input-item{background:var(--surface);border-radius:12px;padding:10px 12px;}
+.cat-input-item label{font-size:12px;font-weight:700;margin-bottom:6px;display:block;}
+.cat-input-item input{background:var(--white);padding:10px 12px;}
+.day-total-line{display:flex;justify-content:space-between;padding:12px 2px 0;font-size:13px;font-weight:700;color:var(--ink-soft);}
+.day-total-line b{color:var(--ink);font-family:'Poppins';}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+  background:var(--ink);color:#fff;padding:11px 20px;border-radius:30px;font-size:13.5px;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25);opacity:0;pointer-events:none;transition:opacity .25s, bottom .25s;z-index:50;
+  max-width:80%;text-align:center;
+}
+.toast.show{opacity:1;bottom:34px;}
+
+/* ---------- category bars ---------- */
+.cat-toggle{display:flex;gap:6px;margin-bottom:12px;}
+.cat-toggle .filter-chip{margin:0;}
+.cat-row{margin-bottom:12px;}
+.cat-row:last-child{margin-bottom:0;}
+.cat-head{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;}
+.cat-head .cn{font-weight:700;}
+.cat-head .cv{color:var(--ink-soft);}
+.cat-bar-bg{background:var(--surface);border-radius:8px;height:9px;overflow:hidden;}
+.cat-bar-fill{height:100%;border-radius:8px;}
+
+/* ---------- week cards ---------- */
+.week-card{display:flex;justify-content:space-between;align-items:center;padding:12px 4px;border-bottom:1px solid var(--border);}
+.week-card.current{background:var(--red-bg);border-radius:10px;padding:12px 10px;border-bottom:none;margin-bottom:4px;}
+.week-card:last-child{border-bottom:none;}
+.week-name{font-weight:700;font-size:13.5px;display:flex;align-items:center;}
+.week-range{font-size:11px;color:var(--ink-soft);}
+.week-nums{text-align:right;font-size:13px;}
+.week-nums b{font-family:'Poppins';}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;margin-left:8px;}
+
+/* history */
+.hist-row{padding:9px 4px;border-bottom:1px dashed var(--border);}
+.hist-row:last-child{border-bottom:none;}
+.hist-top{display:flex;justify-content:space-between;font-size:13px;}
+.hist-date{color:var(--ink-soft);}
+.hist-units{font-weight:700;}
+.hist-breakdown{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+
+/* admin table */
+.admin-row{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--border);}
+.admin-row .an{flex:1;min-width:0;}
+.admin-row .an .n{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.admin-row .an .s{font-size:11px;color:var(--ink-soft);}
+.admin-row .ap{width:74px;text-align:right;font-weight:800;font-family:'Poppins';font-size:14px;}
+.filter-chip{
+  display:inline-block;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);
+  font-size:12.5px;font-weight:600;margin-right:6px;margin-bottom:8px;cursor:pointer;color:var(--ink-soft);
+}
+.filter-chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.admin-summary-band{display:flex;gap:10px;padding:14px 20px 4px;}
+.linkbtn{background:none;border:none;color:var(--red);font-weight:700;font-size:13px;cursor:pointer;padding:0;}
+.day-grid{display:flex;flex-wrap:wrap;gap:6px;}
+.day-box{width:15.8%;aspect-ratio:1;min-width:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.day-loaded{background:var(--green-bg);color:var(--green);}
+.day-missing{background:var(--red-bg);color:var(--red);}
+.day-future{background:var(--surface);color:var(--ink-soft);font-weight:500;}
+.day-legend{display:flex;gap:14px;margin-top:10px;font-size:11px;color:var(--ink-soft);}
+.day-legend span{display:inline-flex;align-items:center;gap:5px;}
+.day-legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+.admin-row-click:active{background:var(--surface);}
+.cat-mini{font-size:10.5px;color:var(--ink-soft);margin-top:3px;}
+.cat-mini b{font-weight:700;}
+.ap .chev{color:var(--ink-soft);font-size:13px;margin-left:2px;}
+.footer-note{font-size:11px;color:var(--ink-soft);text-align:center;padding:14px 30px 0;}
+.empty-msg{text-align:center;color:var(--ink-soft);padding:20px 10px;font-size:13px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ DATA: target base (fijo — Agosto, desglose semanal por categoría) ============ */
+const TARGET_MONTH_LABEL = "Agosto 2026";
+const TARGET_MONTH = 7; // 0-indexed => August
+const TARGET_YEAR = 2026;
+const DAYS_IN_MONTH = new Date(TARGET_YEAR, TARGET_MONTH+1, 0).getDate();
+const WEEK_WEIGHTS = [0.27, 0.29, 0.25, 0.19]; // W1..W4, tal como en el archivo de target
+const WORKING_DAYS_PER_MONTH = 26; // promedio de días que trabaja un promotor al mes
+
+const STORES = [{"code": "C230", "store": "Domic Btá Zf", "channel": "CLARO", "account": "CLARO", "supervisor": "Zamora Melo Leidy Johanna", "target": 790, "w": [213, 229, 198, 150], "cat_target": {"SP": 390, "Tab": 200, "WR": 200, "AUD": 0}, "cat_w": {"SP": [105, 113, 98, 74], "Tab": [54, 58, 50, 38], "WR": [54, 58, 50, 38], "AUD": [0, 0, 0, 0]}, "promoters": 7, "tabletSpecialist": false}, {"code": "C200", "store": "Tienda Virtual", "channel": "CLARO", "account": "CLARO", "supervisor": "Zamora Melo Leidy Johanna", "target": 711, "w": [192, 205, 177, 137], "cat_target": {"SP": 136, "Tab": 125, "WR": 305, "AUD": 145}, "cat_w": {"SP": [37, 39, 34, 26], "Tab": [34, 36, 31, 24], "WR": [82, 88, 76, 59], "AUD": [39, 42, 36, 28]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430013", "store": "Alkosto Av 68", "channel": "ALKOSTO", "account": "OM", "supervisor": "Fernando Romero", "target": 523, "w": [141, 152, 132, 98], "cat_target": {"SP": 54, "Tab": 59, "WR": 227, "AUD": 183}, "cat_w": {"SP": [15, 16, 14, 9], "Tab": [16, 17, 15, 11], "WR": [61, 66, 57, 43], "AUD": [49, 53, 46, 35]}, "promoters": 4, "tabletSpecialist": true}, {"code": "SCOL11001430020", "store": "Alkosto Venecia", "channel": "ALKOSTO", "account": "OM", "supervisor": "Luisa Ordoñez", "target": 504, "w": [137, 147, 127, 93], "cat_target": {"SP": 88, "Tab": 59, "WR": 202, "AUD": 155}, "cat_w": {"SP": [24, 26, 22, 16], "Tab": [16, 17, 15, 11], "WR": [55, 59, 51, 37], "AUD": [42, 45, 39, 29]}, "promoters": 4, "tabletSpecialist": true}, {"code": "SCOL76001430015", "store": "Alkosto Cali Cr. 80", "channel": "ALKOSTO", "account": "OM", "supervisor": "Juan David Mahecha", "target": 317, "w": [85, 92, 80, 60], "cat_target": {"SP": 37, "Tab": 59, "WR": 135, "AUD": 86}, "cat_w": {"SP": [10, 11, 9, 7], "Tab": [16, 17, 15, 11], "WR": [36, 39, 34, 26], "AUD": [23, 25, 22, 16]}, "promoters": 3, "tabletSpecialist": true}, {"code": "SCOL11001430012", "store": "Alkosto 170", "channel": "ALKOSTO", "account": "OM", "supervisor": "Julian Uribe", "target": 316, "w": [85, 92, 80, 59], "cat_target": {"SP": 24, "Tab": 59, "WR": 138, "AUD": 95}, "cat_w": {"SP": [6, 7, 6, 5], "Tab": [16, 17, 15, 11], "WR": [37, 40, 35, 26], "AUD": [26, 28, 24, 17]}, "promoters": 3, "tabletSpecialist": true}, {"code": "SGSCO085439", "store": "Alkosto Cali Norte", "channel": "ALKOSTO", "account": "OM", "supervisor": "Santiago Ayala", "target": 289, "w": [78, 85, 73, 53], "cat_target": {"SP": 23, "Tab": 27, "WR": 144, "AUD": 95}, "cat_w": {"SP": [6, 7, 6, 4], "Tab": [7, 8, 7, 5], "WR": [39, 42, 36, 27], "AUD": [26, 28, 24, 17]}, "promoters": 2, "tabletSpecialist": false}, {"code": "SCOL66001430019", "store": "Alkosto Pereira Av. Americas", "channel": "ALKOSTO", "account": "OM", "supervisor": "Santiago Ayala", "target": 260, "w": [70, 75, 65, 50], "cat_target": {"SP": 25, "Tab": 0, "WR": 152, "AUD": 83}, "cat_w": {"SP": [7, 7, 6, 5], "Tab": [0, 0, 0, 0], "WR": [41, 44, 38, 29], "AUD": [22, 24, 21, 16]}, "promoters": 2, "tabletSpecialist": false}, {"code": "SCOL11001430312", "store": "Ktronix Salitre", "channel": "ALKOSTO", "account": "OM", "supervisor": "Ingrid Diaz", "target": 259, "w": [70, 75, 65, 49], "cat_target": {"SP": 11, "Tab": 59, "WR": 96, "AUD": 93}, "cat_w": {"SP": [3, 3, 3, 2], "Tab": [16, 17, 15, 11], "WR": [26, 28, 24, 18], "AUD": [25, 27, 23, 18]}, "promoters": 2, "tabletSpecialist": true}, {"code": "SCOL25754430039", "store": "Ktronix Soacha", "channel": "ALKOSTO", "account": "OM", "supervisor": "Tatiana Barragan", "target": 245, "w": [67, 71, 61, 46], "cat_target": {"SP": 19, "Tab": 13, "WR": 84, "AUD": 129}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [4, 4, 3, 2], "WR": [23, 24, 21, 16], "AUD": [35, 37, 32, 25]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO027717", "store": "Alkosto El Eden", "channel": "ALKOSTO", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 247, "w": [67, 71, 63, 46], "cat_target": {"SP": 18, "Tab": 6, "WR": 118, "AUD": 105}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [2, 2, 2, 0], "WR": [32, 34, 30, 22], "AUD": [28, 30, 26, 21]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO087548", "store": "Ktronix Mall Plaza Nqs", "channel": "ALKOSTO", "account": "OM", "supervisor": "Tatiana Barragan", "target": 243, "w": [66, 71, 61, 45], "cat_target": {"SP": 16, "Tab": 6, "WR": 89, "AUD": 132}, "cat_w": {"SP": [4, 5, 4, 3], "Tab": [2, 2, 2, 0], "WR": [24, 26, 22, 17], "AUD": [36, 38, 33, 25]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL15001430159", "store": "Ktronix Tunja", "channel": "ALKOSTO", "account": "OM", "supervisor": "Fernando Romero", "target": 236, "w": [63, 67, 59, 47], "cat_target": {"SP": 15, "Tab": 4, "WR": 112, "AUD": 105}, "cat_w": {"SP": [4, 4, 4, 3], "Tab": [1, 1, 1, 1], "WR": [30, 32, 28, 22], "AUD": [28, 30, 26, 21]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL25175430566", "store": "Ktronix Cc Fontanar Cajica", "channel": "ALKOSTO", "account": "OM", "supervisor": "Ruben Cedeño", "target": 229, "w": [61, 66, 58, 44], "cat_target": {"SP": 35, "Tab": 0, "WR": 100, "AUD": 94}, "cat_w": {"SP": [9, 10, 9, 7], "Tab": [0, 0, 0, 0], "WR": [27, 29, 25, 19], "AUD": [25, 27, 24, 18]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430307", "store": "Ktronix Centro Mayor", "channel": "ALKOSTO", "account": "OM", "supervisor": "Tatiana Barragan", "target": 219, "w": [59, 64, 55, 41], "cat_target": {"SP": 20, "Tab": 0, "WR": 86, "AUD": 113}, "cat_w": {"SP": [5, 6, 5, 4], "Tab": [0, 0, 0, 0], "WR": [23, 25, 22, 16], "AUD": [31, 33, 28, 21]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol50001110792", "store": "Cav Bogota Plaza Claro", "channel": "CLARO", "account": "CLARO", "supervisor": "Ingrid Diaz", "target": 207, "w": [56, 60, 52, 39], "cat_target": {"SP": 36, "Tab": 40, "WR": 85, "AUD": 46}, "cat_w": {"SP": [10, 10, 9, 7], "Tab": [11, 12, 10, 7], "WR": [23, 25, 21, 16], "AUD": [12, 13, 12, 9]}, "promoters": 2, "tabletSpecialist": false}, {"code": "SCOL11001430310", "store": "Ktronix Plaza De Las Americas", "channel": "ALKOSTO", "account": "OM", "supervisor": "Ruben Cedeño", "target": 219, "w": [60, 63, 56, 40], "cat_target": {"SP": 15, "Tab": 14, "WR": 84, "AUD": 106}, "cat_w": {"SP": [4, 4, 4, 3], "Tab": [4, 4, 4, 2], "WR": [23, 24, 21, 16], "AUD": [29, 31, 27, 19]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL50001430021", "store": "Alkosto Villavicencio Princ Cl. 31", "channel": "ALKOSTO", "account": "OM", "supervisor": "Fernando Romero", "target": 215, "w": [58, 62, 54, 41], "cat_target": {"SP": 29, "Tab": 11, "WR": 109, "AUD": 66}, "cat_w": {"SP": [8, 8, 7, 6], "Tab": [3, 3, 3, 2], "WR": [29, 32, 27, 21], "AUD": [18, 19, 17, 12]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL50001430317", "store": "Ktronix Villavicencio", "channel": "ALKOSTO", "account": "OM", "supervisor": "Fernando Romero", "target": 208, "w": [57, 60, 52, 39], "cat_target": {"SP": 13, "Tab": 0, "WR": 122, "AUD": 73}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [0, 0, 0, 0], "WR": [33, 35, 31, 23], "AUD": [20, 21, 18, 14]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL08001430045", "store": "Alkosto Barranquilla", "channel": "ALKOSTO", "account": "OM", "supervisor": "Renzo Bermudez", "target": 211, "w": [58, 61, 53, 39], "cat_target": {"SP": 18, "Tab": 0, "WR": 117, "AUD": 76}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [0, 0, 0, 0], "WR": [32, 34, 29, 22], "AUD": [21, 22, 19, 14]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430014", "store": "Alkosto Bog Cr 30", "channel": "ALKOSTO", "account": "OM", "supervisor": "Fernando Romero", "target": 210, "w": [57, 62, 53, 38], "cat_target": {"SP": 23, "Tab": 0, "WR": 92, "AUD": 95}, "cat_w": {"SP": [6, 7, 6, 4], "Tab": [0, 0, 0, 0], "WR": [25, 27, 23, 17], "AUD": [26, 28, 24, 17]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL68276430391", "store": "Alkosto Floridablanca", "channel": "ALKOSTO", "account": "OM", "supervisor": "Angie Calderon", "target": 209, "w": [56, 61, 53, 39], "cat_target": {"SP": 19, "Tab": 7, "WR": 101, "AUD": 82}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [2, 2, 2, 1], "WR": [27, 29, 25, 20], "AUD": [22, 24, 21, 15]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL68001430304", "store": "Ktronix Bucaramanga", "channel": "ALKOSTO", "account": "OM", "supervisor": "Angie Calderon", "target": 207, "w": [55, 59, 52, 41], "cat_target": {"SP": 12, "Tab": 0, "WR": 90, "AUD": 105}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [0, 0, 0, 0], "WR": [24, 26, 23, 17], "AUD": [28, 30, 26, 21]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430315", "store": "Ktronix Titan Plaza", "channel": "ALKOSTO", "account": "OM", "supervisor": "Fernando Romero", "target": 210, "w": [56, 60, 53, 41], "cat_target": {"SP": 12, "Tab": 8, "WR": 78, "AUD": 112}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [2, 2, 2, 2], "WR": [21, 23, 20, 14], "AUD": [30, 32, 28, 22]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL76001430130", "store": "Ktronix Chipichape", "channel": "ALKOSTO", "account": "OM", "supervisor": "Santiago Ayala", "target": 206, "w": [55, 60, 52, 39], "cat_target": {"SP": 16, "Tab": 0, "WR": 112, "AUD": 78}, "cat_w": {"SP": [4, 5, 4, 3], "Tab": [0, 0, 0, 0], "WR": [30, 32, 28, 22], "AUD": [21, 23, 20, 14]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430313", "store": "Ktronix Suba", "channel": "ALKOSTO", "account": "OM", "supervisor": "Julian Uribe", "target": 192, "w": [52, 56, 48, 36], "cat_target": {"SP": 14, "Tab": 13, "WR": 68, "AUD": 97}, "cat_w": {"SP": [4, 4, 4, 2], "Tab": [4, 4, 3, 2], "WR": [18, 20, 17, 13], "AUD": [26, 28, 24, 19]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL17001430293", "store": "Ktronix Manizales", "channel": "ALKOSTO", "account": "OM", "supervisor": "Santiago Ayala", "target": 193, "w": [53, 56, 48, 36], "cat_target": {"SP": 13, "Tab": 7, "WR": 77, "AUD": 96}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [2, 2, 2, 1], "WR": [21, 22, 19, 15], "AUD": [26, 28, 24, 18]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL25473430308", "store": "Ktronix Mosquera", "channel": "ALKOSTO", "account": "OM", "supervisor": "Ruben Cedeño", "target": 182, "w": [49, 53, 47, 33], "cat_target": {"SP": 18, "Tab": 11, "WR": 75, "AUD": 78}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [3, 3, 3, 2], "WR": [20, 22, 19, 14], "AUD": [21, 23, 20, 14]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430316", "store": "Ktronix Unicentro", "channel": "ALKOSTO", "account": "OM", "supervisor": "Julian Uribe", "target": 173, "w": [47, 51, 43, 32], "cat_target": {"SP": 13, "Tab": 0, "WR": 85, "AUD": 75}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [0, 0, 0, 0], "WR": [23, 25, 21, 16], "AUD": [20, 22, 19, 14]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol25754110099", "store": "Cav Soacha Mercurio Ii", "channel": "CLARO", "account": "CLARO", "supervisor": "Ingrid Diaz", "target": 138, "w": [37, 40, 35, 26], "cat_target": {"SP": 21, "Tab": 35, "WR": 58, "AUD": 24}, "cat_w": {"SP": [6, 6, 5, 4], "Tab": [9, 10, 9, 7], "WR": [16, 17, 15, 10], "AUD": [6, 7, 6, 5]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430311", "store": "Ktronix Poblado", "channel": "ALKOSTO", "account": "OM", "supervisor": "Sneider Estevez", "target": 147, "w": [39, 43, 37, 28], "cat_target": {"SP": 11, "Tab": 4, "WR": 68, "AUD": 64}, "cat_w": {"SP": [3, 3, 3, 2], "Tab": [1, 1, 1, 1], "WR": [18, 20, 17, 13], "AUD": [17, 19, 16, 12]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO082615", "store": "Ktronix Barranquilla", "channel": "ALKOSTO", "account": "OM", "supervisor": "Renzo Bermudez", "target": 143, "w": [39, 41, 37, 26], "cat_target": {"SP": 14, "Tab": 0, "WR": 67, "AUD": 62}, "cat_w": {"SP": [4, 4, 4, 2], "Tab": [0, 0, 0, 0], "WR": [18, 19, 17, 13], "AUD": [17, 18, 16, 11]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL70001430162", "store": "Alkosto Sincelejo", "channel": "ALKOSTO", "account": "OM", "supervisor": "Renzo Bermudez", "target": 141, "w": [39, 41, 36, 25], "cat_target": {"SP": 17, "Tab": 0, "WR": 66, "AUD": 58}, "cat_w": {"SP": [5, 5, 4, 3], "Tab": [0, 0, 0, 0], "WR": [18, 19, 17, 12], "AUD": [16, 17, 15, 10]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430314", "store": "Ktronix Tesoro", "channel": "ALKOSTO", "account": "OM", "supervisor": "Sneider Estevez", "target": 144, "w": [38, 42, 36, 28], "cat_target": {"SP": 12, "Tab": 0, "WR": 71, "AUD": 61}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [0, 0, 0, 0], "WR": [19, 21, 18, 13], "AUD": [16, 18, 15, 12]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO080919", "store": "Ktronix Girardot", "channel": "ALKOSTO", "account": "OM", "supervisor": "Ingrid Diaz", "target": 141, "w": [38, 41, 35, 27], "cat_target": {"SP": 21, "Tab": 0, "WR": 59, "AUD": 61}, "cat_w": {"SP": [6, 6, 5, 4], "Tab": [0, 0, 0, 0], "WR": [16, 17, 15, 11], "AUD": [16, 18, 15, 12]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO027718", "store": "Ktronix Arkadia", "channel": "ALKOSTO", "account": "OM", "supervisor": "Sneider Estevez", "target": 141, "w": [38, 41, 36, 26], "cat_target": {"SP": 12, "Tab": 0, "WR": 71, "AUD": 58}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [0, 0, 0, 0], "WR": [19, 21, 18, 13], "AUD": [16, 17, 15, 10]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430303", "store": "Ktronix 20 Julio", "channel": "ALKOSTO", "account": "OM", "supervisor": "Tatiana Barragan", "target": 140, "w": [38, 41, 36, 25], "cat_target": {"SP": 10, "Tab": 0, "WR": 71, "AUD": 59}, "cat_w": {"SP": [3, 3, 3, 1], "Tab": [0, 0, 0, 0], "WR": [19, 21, 18, 13], "AUD": [16, 17, 15, 11]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO073963", "store": "Ktronix Fusagasuga", "channel": "ALKOSTO", "account": "OM", "supervisor": "Luisa Ordoñez", "target": 137, "w": [37, 40, 35, 25], "cat_target": {"SP": 10, "Tab": 0, "WR": 72, "AUD": 55}, "cat_w": {"SP": [3, 3, 3, 1], "Tab": [0, 0, 0, 0], "WR": [19, 21, 18, 14], "AUD": [15, 16, 14, 10]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430181", "store": "Falabella Centro Mayor", "channel": "Falabella", "account": "OM", "supervisor": "Tatiana Barragan", "target": 133, "w": [36, 38, 34, 25], "cat_target": {"SP": 12, "Tab": 10, "WR": 81, "AUD": 30}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [3, 3, 3, 1], "WR": [22, 23, 20, 16], "AUD": [8, 9, 8, 5]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110830", "store": "Cav Centro T", "channel": "CLARO", "account": "CLARO", "supervisor": "Tatiana Barragan", "target": 112, "w": [31, 32, 29, 20], "cat_target": {"SP": 18, "Tab": 22, "WR": 51, "AUD": 21}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [6, 6, 6, 4], "WR": [14, 15, 13, 9], "AUD": [6, 6, 5, 4]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430200", "store": "Falabella Unicentro", "channel": "Falabella", "account": "OM", "supervisor": "Julian Uribe", "target": 118, "w": [33, 34, 30, 21], "cat_target": {"SP": 13, "Tab": 10, "WR": 70, "AUD": 25}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [3, 3, 3, 1], "WR": [19, 20, 18, 13], "AUD": [7, 7, 6, 5]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110041", "store": "Cav Bogota Alamos", "channel": "CLARO", "account": "CLARO", "supervisor": "Ruben Cedeño", "target": 103, "w": [28, 31, 25, 19], "cat_target": {"SP": 33, "Tab": 13, "WR": 41, "AUD": 16}, "cat_w": {"SP": [9, 10, 8, 6], "Tab": [4, 4, 3, 2], "WR": [11, 12, 10, 8], "AUD": [4, 5, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430196", "store": "Falabella Santa Fe Bog", "channel": "Falabella", "account": "OM", "supervisor": "Julian Uribe", "target": 110, "w": [30, 32, 28, 20], "cat_target": {"SP": 13, "Tab": 11, "WR": 64, "AUD": 22}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [3, 3, 3, 2], "WR": [17, 19, 16, 12], "AUD": [6, 6, 6, 4]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL25175430571", "store": "Falabella Fontanar", "channel": "Falabella", "account": "OM", "supervisor": "Ruben Cedeño", "target": 110, "w": [30, 32, 28, 20], "cat_target": {"SP": 13, "Tab": 12, "WR": 59, "AUD": 26}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [3, 3, 3, 3], "WR": [16, 17, 15, 11], "AUD": [7, 8, 7, 4]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430197", "store": "Falabella Santafe Med", "channel": "Falabella", "account": "OM", "supervisor": "Sneider Estevez", "target": 109, "w": [30, 31, 28, 20], "cat_target": {"SP": 11, "Tab": 12, "WR": 58, "AUD": 28}, "cat_w": {"SP": [3, 3, 3, 2], "Tab": [3, 3, 3, 3], "WR": [16, 17, 15, 10], "AUD": [8, 8, 7, 5]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430046", "store": "Falabella Colina", "channel": "Falabella", "account": "OM", "supervisor": "Julian Uribe", "target": 109, "w": [30, 32, 28, 19], "cat_target": {"SP": 13, "Tab": 14, "WR": 63, "AUD": 19}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [4, 4, 4, 2], "WR": [17, 18, 16, 12], "AUD": [5, 6, 5, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol54001110061", "store": "Cav Gran Colombia Cúcuta", "channel": "CLARO", "account": "CLARO", "supervisor": "Angie Calderon", "target": 99, "w": [26, 30, 25, 18], "cat_target": {"SP": 19, "Tab": 19, "WR": 45, "AUD": 16}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [5, 6, 5, 3], "WR": [12, 13, 11, 9], "AUD": [4, 5, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430195", "store": "Falabella San Diego", "channel": "Falabella", "account": "OM", "supervisor": "Brayan Garcia", "target": 106, "w": [29, 31, 27, 19], "cat_target": {"SP": 13, "Tab": 11, "WR": 58, "AUD": 24}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [3, 3, 3, 2], "WR": [16, 17, 15, 10], "AUD": [6, 7, 6, 5]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110824", "store": "Cav Plaza Imperial T", "channel": "CLARO", "account": "CLARO", "supervisor": "Viviana Sepulveda", "target": 93, "w": [25, 26, 25, 17], "cat_target": {"SP": 22, "Tab": 18, "WR": 38, "AUD": 15}, "cat_w": {"SP": [6, 6, 6, 4], "Tab": [5, 5, 5, 3], "WR": [10, 11, 10, 7], "AUD": [4, 4, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL68001430180", "store": "Falabella Caracoli", "channel": "Falabella", "account": "OM", "supervisor": "Jhon Romero", "target": 97, "w": [26, 28, 24, 19], "cat_target": {"SP": 12, "Tab": 9, "WR": 55, "AUD": 21}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [2, 3, 2, 2], "WR": [15, 16, 14, 10], "AUD": [6, 6, 5, 4]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol41001110082", "store": "Cav Neiva San Pedro", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 86, "w": [23, 25, 22, 16], "cat_target": {"SP": 20, "Tab": 18, "WR": 37, "AUD": 11}, "cat_w": {"SP": [5, 6, 5, 4], "Tab": [5, 5, 5, 3], "WR": [10, 11, 9, 7], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol25473110488", "store": "Cav Mosquera T", "channel": "CLARO", "account": "CLARO", "supervisor": "Ruben Cedeño", "target": 86, "w": [24, 25, 21, 16], "cat_target": {"SP": 28, "Tab": 17, "WR": 32, "AUD": 9}, "cat_w": {"SP": [8, 8, 7, 5], "Tab": [5, 5, 4, 3], "WR": [9, 9, 8, 6], "AUD": [2, 3, 2, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL73001430210", "store": "Falabella Acqua", "channel": "Falabella", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 92, "w": [25, 26, 23, 18], "cat_target": {"SP": 11, "Tab": 8, "WR": 44, "AUD": 29}, "cat_w": {"SP": [3, 3, 3, 2], "Tab": [2, 2, 2, 2], "WR": [12, 13, 11, 8], "AUD": [8, 8, 7, 6]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL76001430572", "store": "Falabella Jardin Plaza", "channel": "Falabella", "account": "OM", "supervisor": "Juan David Mahecha", "target": 93, "w": [26, 27, 24, 16], "cat_target": {"SP": 13, "Tab": 10, "WR": 52, "AUD": 18}, "cat_w": {"SP": [4, 4, 3, 2], "Tab": [3, 3, 3, 1], "WR": [14, 15, 13, 10], "AUD": [5, 5, 5, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol17380110030", "store": "Cav La Dorada", "channel": "CLARO", "account": "CLARO", "supervisor": "Ruben Cedeño", "target": 82, "w": [23, 23, 22, 14], "cat_target": {"SP": 22, "Tab": 10, "WR": 39, "AUD": 11}, "cat_w": {"SP": [6, 6, 6, 4], "Tab": [3, 3, 3, 1], "WR": [11, 11, 10, 7], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430199", "store": "Falabella Titan", "channel": "Falabella", "account": "OM", "supervisor": "Fernando Romero", "target": 90, "w": [24, 26, 22, 18], "cat_target": {"SP": 12, "Tab": 9, "WR": 52, "AUD": 17}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [2, 3, 2, 2], "WR": [14, 15, 13, 10], "AUD": [5, 5, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110110", "store": "Cav Titan Plaza", "channel": "CLARO", "account": "CLARO", "supervisor": "Fernando Romero", "target": 81, "w": [22, 23, 21, 15], "cat_target": {"SP": 22, "Tab": 16, "WR": 32, "AUD": 11}, "cat_w": {"SP": [6, 6, 6, 4], "Tab": [4, 5, 4, 3], "WR": [9, 9, 8, 6], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol68001110045", "store": "Cav Bucaramanga Cabecera", "channel": "CLARO", "account": "CLARO", "supervisor": "Jhon Romero", "target": 79, "w": [21, 23, 20, 15], "cat_target": {"SP": 19, "Tab": 16, "WR": 32, "AUD": 12}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [4, 5, 4, 3], "WR": [9, 9, 8, 6], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol50001110106", "store": "Cav Villavicencio Villa Centro", "channel": "CLARO", "account": "CLARO", "supervisor": "Fernando Romero", "target": 79, "w": [21, 24, 21, 13], "cat_target": {"SP": 26, "Tab": 9, "WR": 30, "AUD": 14}, "cat_w": {"SP": [7, 8, 7, 4], "Tab": [2, 3, 2, 2], "WR": [8, 9, 8, 5], "AUD": [4, 4, 4, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol19290110069", "store": "Cav Florencia", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 78, "w": [21, 23, 20, 14], "cat_target": {"SP": 19, "Tab": 16, "WR": 29, "AUD": 14}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [4, 5, 4, 3], "WR": [8, 8, 7, 6], "AUD": [4, 4, 4, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol76147110033", "store": "Cav Cartago", "channel": "CLARO", "account": "CLARO", "supervisor": "Juan David Mahecha", "target": 75, "w": [20, 22, 19, 14], "cat_target": {"SP": 27, "Tab": 14, "WR": 25, "AUD": 9}, "cat_w": {"SP": [7, 8, 7, 5], "Tab": [4, 4, 4, 2], "WR": [7, 7, 6, 5], "AUD": [2, 3, 2, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol13001110613", "store": "Cav Cartagena Ejecutivos", "channel": "CLARO", "account": "CLARO", "supervisor": "Renzo Bermudez", "target": 74, "w": [21, 21, 18, 14], "cat_target": {"SP": 25, "Tab": 13, "WR": 28, "AUD": 8}, "cat_w": {"SP": [7, 7, 6, 5], "Tab": [4, 4, 3, 2], "WR": [8, 8, 7, 5], "AUD": [2, 2, 2, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110076", "store": "Cav Bogota Kennedy", "channel": "CLARO", "account": "CLARO", "supervisor": "Ingrid Diaz", "target": 74, "w": [20, 22, 19, 13], "cat_target": {"SP": 19, "Tab": 10, "WR": 33, "AUD": 12}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [3, 3, 3, 1], "WR": [9, 10, 8, 6], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol47001110097", "store": "Cav Santa Marta Buenavista", "channel": "CLARO", "account": "CLARO", "supervisor": "Renzo Bermudez", "target": 73, "w": [20, 21, 18, 14], "cat_target": {"SP": 17, "Tab": 13, "WR": 31, "AUD": 12}, "cat_w": {"SP": [5, 5, 4, 3], "Tab": [4, 4, 3, 2], "WR": [8, 9, 8, 6], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol05001110080", "store": "Cav Medellin Av Colombia", "channel": "CLARO", "account": "CLARO", "supervisor": "Brayan Garcia", "target": 73, "w": [20, 22, 19, 12], "cat_target": {"SP": 20, "Tab": 14, "WR": 26, "AUD": 13}, "cat_w": {"SP": [5, 6, 5, 4], "Tab": [4, 4, 4, 2], "WR": [7, 8, 7, 4], "AUD": [4, 4, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110058", "store": "Cav Bogota Calima", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 73, "w": [20, 20, 19, 14], "cat_target": {"SP": 18, "Tab": 12, "WR": 28, "AUD": 15}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [3, 3, 3, 3], "WR": [8, 8, 7, 5], "AUD": [4, 4, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL76001430010", "store": "Alkomprar Unico", "channel": "Alkomprar", "account": "OM", "supervisor": "Santiago Ayala", "target": 74, "w": [20, 21, 19, 14], "cat_target": {"SP": 30, "Tab": 0, "WR": 15, "AUD": 29}, "cat_w": {"SP": [8, 9, 8, 5], "Tab": [0, 0, 0, 0], "WR": [4, 4, 4, 3], "AUD": [8, 8, 7, 6]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110071", "store": "Cav Bogota Fontibon", "channel": "CLARO", "account": "CLARO", "supervisor": "Ruben Cedeño", "target": 72, "w": [20, 21, 19, 12], "cat_target": {"SP": 21, "Tab": 10, "WR": 30, "AUD": 11}, "cat_w": {"SP": [6, 6, 5, 4], "Tab": [3, 3, 3, 1], "WR": [8, 9, 8, 5], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol15001110102", "store": "Cav Tunja La Sexta", "channel": "CLARO", "account": "CLARO", "supervisor": "Fernando Romero", "target": 71, "w": [19, 21, 19, 12], "cat_target": {"SP": 19, "Tab": 10, "WR": 31, "AUD": 11}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [3, 3, 3, 1], "WR": [8, 9, 8, 6], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110105", "store": "Cav Bogota Venecia", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 72, "w": [20, 21, 19, 12], "cat_target": {"SP": 18, "Tab": 13, "WR": 27, "AUD": 14}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [4, 4, 3, 2], "WR": [7, 8, 7, 5], "AUD": [4, 4, 4, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol05088110092", "store": "Cav Medellin Puerta Del Norte", "channel": "CLARO", "account": "CLARO", "supervisor": "Brayan Garcia", "target": 72, "w": [20, 21, 19, 12], "cat_target": {"SP": 25, "Tab": 10, "WR": 27, "AUD": 10}, "cat_w": {"SP": [7, 7, 6, 5], "Tab": [3, 3, 3, 1], "WR": [7, 8, 7, 5], "AUD": [3, 3, 3, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL76001430203", "store": "Falabella Wtc Cali", "channel": "Falabella", "account": "OM", "supervisor": "Santiago Ayala", "target": 79, "w": [22, 22, 20, 15], "cat_target": {"SP": 12, "Tab": 7, "WR": 43, "AUD": 17}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [2, 2, 2, 1], "WR": [12, 12, 11, 8], "AUD": [5, 5, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110094", "store": "Cav Bogota Restrepo", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 71, "w": [20, 20, 19, 12], "cat_target": {"SP": 22, "Tab": 10, "WR": 28, "AUD": 11}, "cat_w": {"SP": [6, 6, 6, 4], "Tab": [3, 3, 3, 1], "WR": [8, 8, 7, 5], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL25290110449", "store": "Cav Fusagasuga T", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 71, "w": [19, 21, 19, 12], "cat_target": {"SP": 23, "Tab": 10, "WR": 26, "AUD": 12}, "cat_w": {"SP": [6, 7, 6, 4], "Tab": [3, 3, 3, 1], "WR": [7, 8, 7, 4], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL73001110455", "store": "Cav Ibagué Fontainebleau", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 71, "w": [19, 20, 18, 14], "cat_target": {"SP": 25, "Tab": 10, "WR": 24, "AUD": 12}, "cat_w": {"SP": [7, 7, 6, 5], "Tab": [3, 3, 3, 1], "WR": [6, 7, 6, 5], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol05266110682", "store": "Cav Medellin Sao Paulo", "channel": "CLARO", "account": "CLARO", "supervisor": "Sneider Estevez", "target": 70, "w": [20, 21, 18, 11], "cat_target": {"SP": 21, "Tab": 10, "WR": 26, "AUD": 13}, "cat_w": {"SP": [6, 6, 5, 4], "Tab": [3, 3, 3, 1], "WR": [7, 8, 7, 4], "AUD": [4, 4, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110681", "store": "Ensueño Madelena", "channel": "CLARO", "account": "CLARO", "supervisor": "Ingrid Diaz", "target": 70, "w": [20, 21, 17, 12], "cat_target": {"SP": 19, "Tab": 13, "WR": 25, "AUD": 13}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [4, 4, 3, 2], "WR": [7, 7, 6, 5], "AUD": [4, 4, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol73001110262", "store": "Cav Ibague Centro", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 70, "w": [20, 20, 18, 12], "cat_target": {"SP": 17, "Tab": 14, "WR": 28, "AUD": 11}, "cat_w": {"SP": [5, 5, 4, 3], "Tab": [4, 4, 4, 2], "WR": [8, 8, 7, 5], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110112", "store": "Bosa Gran Plaza", "channel": "CLARO", "account": "CLARO", "supervisor": "Ingrid Diaz", "target": 70, "w": [20, 20, 19, 11], "cat_target": {"SP": 18, "Tab": 10, "WR": 28, "AUD": 14}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [3, 3, 3, 1], "WR": [8, 8, 7, 5], "AUD": [4, 4, 4, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110037", "store": "Cav Plaza De Las Américas", "channel": "CLARO", "account": "CLARO", "supervisor": "Ingrid Diaz", "target": 70, "w": [18, 21, 18, 13], "cat_target": {"SP": 23, "Tab": 12, "WR": 26, "AUD": 9}, "cat_w": {"SP": [6, 7, 6, 4], "Tab": [3, 3, 3, 3], "WR": [7, 8, 7, 4], "AUD": [2, 3, 2, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol68001110046", "store": "Cav Bucaramanga Omnicentro", "channel": "CLARO", "account": "CLARO", "supervisor": "Jhon Romero", "target": 70, "w": [19, 19, 17, 15], "cat_target": {"SP": 21, "Tab": 12, "WR": 25, "AUD": 12}, "cat_w": {"SP": [6, 6, 5, 4], "Tab": [3, 3, 3, 3], "WR": [7, 7, 6, 5], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol25307110450", "store": "Cav Girardot El Plaza", "channel": "CLARO", "account": "CLARO", "supervisor": "Viviana Sepulveda", "target": 70, "w": [19, 19, 17, 15], "cat_target": {"SP": 17, "Tab": 12, "WR": 29, "AUD": 12}, "cat_w": {"SP": [5, 5, 4, 3], "Tab": [3, 3, 3, 3], "WR": [8, 8, 7, 6], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol05001110077", "store": "Cav Medellin Molinos", "channel": "CLARO", "account": "CLARO", "supervisor": "Brayan Garcia", "target": 70, "w": [18, 21, 18, 13], "cat_target": {"SP": 20, "Tab": 11, "WR": 30, "AUD": 9}, "cat_w": {"SP": [5, 6, 5, 4], "Tab": [3, 3, 3, 2], "WR": [8, 9, 8, 5], "AUD": [2, 3, 2, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol85001110107", "store": "Cav Yopal", "channel": "CLARO", "account": "CLARO", "supervisor": "Fernando Romero", "target": 70, "w": [20, 21, 18, 11], "cat_target": {"SP": 19, "Tab": 10, "WR": 28, "AUD": 13}, "cat_w": {"SP": [5, 6, 5, 3], "Tab": [3, 3, 3, 1], "WR": [8, 8, 7, 5], "AUD": [4, 4, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol68081110049", "store": "Cav Barrancabermeja", "channel": "CLARO", "account": "CLARO", "supervisor": "Jhon Romero", "target": 71, "w": [19, 21, 19, 12], "cat_target": {"SP": 20, "Tab": 10, "WR": 27, "AUD": 14}, "cat_w": {"SP": [5, 6, 5, 4], "Tab": [3, 3, 3, 1], "WR": [7, 8, 7, 5], "AUD": [4, 4, 4, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol19001110089", "store": "Cav Popayan Plaza Colonial", "channel": "CLARO", "account": "CLARO", "supervisor": "Juan David Mahecha", "target": 70, "w": [20, 20, 19, 11], "cat_target": {"SP": 18, "Tab": 14, "WR": 28, "AUD": 10}, "cat_w": {"SP": [5, 5, 5, 3], "Tab": [4, 4, 4, 2], "WR": [8, 8, 7, 5], "AUD": [3, 3, 3, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO032510", "store": "Alkomprar Armenia", "channel": "Alkomprar", "account": "OM", "supervisor": "Santiago Ayala", "target": 66, "w": [18, 20, 17, 11], "cat_target": {"SP": 0, "Tab": 0, "WR": 40, "AUD": 26}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [11, 12, 10, 7], "AUD": [7, 8, 7, 4]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO093929", "store": "Ktronix Cartagena", "channel": "ALKOSTO", "account": "OM", "supervisor": "Renzo Bermudez", "target": 68, "w": [18, 20, 18, 12], "cat_target": {"SP": 12, "Tab": 0, "WR": 30, "AUD": 26}, "cat_w": {"SP": [3, 3, 3, 3], "Tab": [0, 0, 0, 0], "WR": [8, 9, 8, 5], "AUD": [7, 8, 7, 4]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL13001430187", "store": "Falabella El Castillo", "channel": "Falabella", "account": "OM", "supervisor": "Renzo Bermudez", "target": 63, "w": [17, 18, 16, 12], "cat_target": {"SP": 5, "Tab": 10, "WR": 35, "AUD": 13}, "cat_w": {"SP": [1, 1, 1, 2], "Tab": [3, 3, 3, 1], "WR": [9, 10, 9, 7], "AUD": [4, 4, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430194", "store": "Falabella Plaza Imperial", "channel": "Falabella", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 48, "w": [13, 14, 13, 8], "cat_target": {"SP": 5, "Tab": 2, "WR": 30, "AUD": 11}, "cat_w": {"SP": [1, 1, 1, 2], "Tab": [1, 1, 1, -1], "WR": [8, 9, 8, 5], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL73001430085", "store": "Alkomprar Ibague", "channel": "Alkomprar", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 49, "w": [13, 15, 13, 8], "cat_target": {"SP": 0, "Tab": 0, "WR": 23, "AUD": 26}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [6, 7, 6, 4], "AUD": [7, 8, 7, 4]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430033", "store": "Falabella Plaza Central", "channel": "Falabella", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 45, "w": [12, 13, 12, 8], "cat_target": {"SP": 4, "Tab": 2, "WR": 27, "AUD": 12}, "cat_w": {"SP": [1, 1, 1, 1], "Tab": [1, 1, 1, -1], "WR": [7, 8, 7, 5], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430189", "store": "Falabella Hayuelos Cl 20", "channel": "Falabella", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 46, "w": [13, 13, 12, 8], "cat_target": {"SP": 3, "Tab": 3, "WR": 28, "AUD": 12}, "cat_w": {"SP": [1, 1, 1, 0], "Tab": [1, 1, 1, 0], "WR": [8, 8, 7, 5], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430188", "store": "Falabella Galerias", "channel": "Falabella", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 48, "w": [13, 13, 12, 10], "cat_target": {"SP": 4, "Tab": 3, "WR": 29, "AUD": 12}, "cat_w": {"SP": [1, 1, 1, 1], "Tab": [1, 1, 1, 0], "WR": [8, 8, 7, 6], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05088430002", "store": "Alkomprar Bello", "channel": "Alkomprar", "account": "OM", "supervisor": "Brayan Garcia", "target": 43, "w": [11, 13, 11, 8], "cat_target": {"SP": 0, "Tab": 0, "WR": 16, "AUD": 27}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 5, 4, 3], "AUD": [7, 8, 7, 5]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430004", "store": "Alkomprar Florida", "channel": "Alkomprar", "account": "OM", "supervisor": "Brayan Garcia", "target": 40, "w": [11, 11, 10, 8], "cat_target": {"SP": 0, "Tab": 0, "WR": 15, "AUD": 25}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 4, 4, 3], "AUD": [7, 7, 6, 5]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL54001430393", "store": "Alkomprar Cucuta", "channel": "Alkomprar", "account": "OM", "supervisor": "Angie Calderon", "target": 35, "w": [9, 11, 9, 6], "cat_target": {"SP": 0, "Tab": 0, "WR": 19, "AUD": 16}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [5, 6, 5, 3], "AUD": [4, 5, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430007", "store": "Alkomprar Molinos", "channel": "Alkomprar", "account": "OM", "supervisor": "Brayan Garcia", "target": 27, "w": [7, 8, 7, 5], "cat_target": {"SP": 0, "Tab": 0, "WR": 11, "AUD": 16}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [3, 3, 3, 2], "AUD": [4, 5, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL68001430274", "store": "Alkomprar Bucaramanga", "channel": "Alkomprar", "account": "OM", "supervisor": "Jhon Romero", "target": 25, "w": [6, 8, 6, 5], "cat_target": {"SP": 0, "Tab": 0, "WR": 9, "AUD": 16}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [2, 3, 2, 2], "AUD": [4, 5, 4, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO027719", "store": "Falabella Buenavista", "channel": "FALABELLA", "account": "OM", "supervisor": "Renzo Bermudez", "target": 25, "w": [7, 7, 7, 4], "cat_target": {"SP": 0, "Tab": 2, "WR": 11, "AUD": 12}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, -1], "WR": [3, 3, 3, 2], "AUD": [3, 3, 3, 3]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430006", "store": "Alkomprar Mayorca", "channel": "Alkomprar", "account": "OM", "supervisor": "Sneider Estevez", "target": 25, "w": [7, 7, 7, 4], "cat_target": {"SP": 0, "Tab": 0, "WR": 11, "AUD": 14}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [3, 3, 3, 2], "AUD": [4, 4, 4, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL68615430008", "store": "Alkomprar Rionegro", "channel": "Alkomprar", "account": "OM", "supervisor": "Sneider Estevez", "target": 25, "w": [7, 8, 7, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 19, "AUD": 6}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [5, 6, 5, 3], "AUD": [2, 2, 2, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO080589", "store": "Alkomprar Jardin Plaza", "channel": "Alkomprar", "account": "OM", "supervisor": "Juan David Mahecha", "target": 23, "w": [6, 6, 6, 5], "cat_target": {"SP": 0, "Tab": 0, "WR": 18, "AUD": 5}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [5, 5, 5, 3], "AUD": [1, 1, 1, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol05001110458", "store": "Cav Mayorca", "channel": "CLARO", "account": "CLARO", "supervisor": "Sneider Estevez", "target": 21, "w": [6, 6, 6, 3], "cat_target": {"SP": 2, "Tab": 7, "WR": 7, "AUD": 5}, "cat_w": {"SP": [1, 1, 1, -1], "Tab": [2, 2, 2, 1], "WR": [2, 2, 2, 1], "AUD": [1, 1, 1, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL50001430285", "store": "Falabella Primavera", "channel": "FALABELLA", "account": "OM", "supervisor": "Fernando Romero", "target": 23, "w": [7, 7, 6, 3], "cat_target": {"SP": 0, "Tab": 3, "WR": 13, "AUD": 7}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 0], "WR": [4, 4, 3, 2], "AUD": [2, 2, 2, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430129", "store": "Falabella La Felicidad", "channel": "FALABELLA", "account": "OM", "supervisor": "Julian Uribe", "target": 22, "w": [7, 7, 6, 2], "cat_target": {"SP": 0, "Tab": 2, "WR": 13, "AUD": 7}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, -1], "WR": [4, 4, 3, 2], "AUD": [2, 2, 2, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO080811", "store": "Alkomprar Fabricato", "channel": "Alkomprar", "account": "OM", "supervisor": "Brayan Garcia", "target": 18, "w": [5, 6, 5, 2], "cat_target": {"SP": 0, "Tab": 0, "WR": 16, "AUD": 2}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 5, 4, 3], "AUD": [1, 1, 1, -1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430295", "store": "Alkomprar Aventura", "channel": "Alkomprar", "account": "OM", "supervisor": "Brayan Garcia", "target": 18, "w": [5, 5, 5, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 10, "AUD": 8}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [3, 3, 3, 1], "AUD": [2, 2, 2, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL66001430179", "store": "Falabella Av Circunva # 5 - 20 - Pereira", "channel": "FALABELLA", "account": "OM", "supervisor": "Santiago Ayala", "target": 20, "w": [6, 6, 6, 2], "cat_target": {"SP": 0, "Tab": 2, "WR": 11, "AUD": 7}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, -1], "WR": [3, 3, 3, 2], "AUD": [2, 2, 2, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091799", "store": "Panamericana Centro Mayor", "channel": "Panamericana", "account": "OM", "supervisor": "Tatiana Barragan", "target": 17, "w": [5, 5, 4, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 17, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [5, 5, 4, 3], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110212", "store": "Cav Bogota Unicentro", "channel": "CLARO", "account": "CLARO", "supervisor": "Julian Uribe", "target": 17, "w": [5, 5, 5, 2], "cat_target": {"SP": 1, "Tab": 2, "WR": 7, "AUD": 7}, "cat_w": {"SP": [0, 0, 0, 1], "Tab": [1, 1, 1, -1], "WR": [2, 2, 2, 1], "AUD": [2, 2, 2, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL17001430299", "store": "Falabella La Carola", "channel": "FALABELLA", "account": "OM", "supervisor": "Santiago Ayala", "target": 19, "w": [5, 6, 5, 3], "cat_target": {"SP": 0, "Tab": 2, "WR": 9, "AUD": 8}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, -1], "WR": [2, 3, 2, 2], "AUD": [2, 2, 2, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091802", "store": "Panamericana Suba Plaza", "channel": "Panamericana", "account": "OM", "supervisor": "Julian Uribe", "target": 16, "w": [4, 5, 4, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 16, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 5, 4, 3], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO093272", "store": "Alkomprar C.C. La Central", "channel": "Alkomprar", "account": "OM", "supervisor": "Brayan Garcia", "target": 15, "w": [4, 4, 4, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 4, "AUD": 11}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [1, 1, 1, 1], "AUD": [3, 3, 3, 2]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO027720", "store": "Falabella Arkadia", "channel": "FALABELLA", "account": "OM", "supervisor": "Brayan Garcia", "target": 18, "w": [5, 6, 5, 2], "cat_target": {"SP": 0, "Tab": 2, "WR": 9, "AUD": 7}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, -1], "WR": [2, 3, 2, 2], "AUD": [2, 2, 2, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091804", "store": "Panamericana Plaza de las Americas", "channel": "Panamericana", "account": "OM", "supervisor": "Ruben Cedeño", "target": 15, "w": [4, 4, 4, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 15, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 4, 4, 3], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL68547430038", "store": "Alkomprar Piedecuesta", "channel": "Alkomprar", "account": "OM", "supervisor": "Jhon Romero", "target": 14, "w": [4, 4, 4, 2], "cat_target": {"SP": 0, "Tab": 0, "WR": 8, "AUD": 6}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [2, 2, 2, 2], "AUD": [2, 2, 2, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL68001430003", "store": "Alkomprar Electro Bucaramanga", "channel": "Alkomprar", "account": "OM", "supervisor": "Jhon Romero", "target": 13, "w": [4, 4, 4, 1], "cat_target": {"SP": 0, "Tab": 0, "WR": 7, "AUD": 6}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [2, 2, 2, 1], "AUD": [2, 2, 2, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091806", "store": "Panamericana Unicentro Bogota", "channel": "Panamericana", "account": "OM", "supervisor": "Julian Uribe", "target": 13, "w": [4, 4, 3, 2], "cat_target": {"SP": 0, "Tab": 0, "WR": 13, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 4, 3, 2], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091812", "store": "Panamericana Poblado Medellin", "channel": "Panamericana", "account": "OM", "supervisor": "Sneider Estevez", "target": 13, "w": [4, 4, 3, 2], "cat_target": {"SP": 0, "Tab": 0, "WR": 13, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 4, 3, 2], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091805", "store": "Panamericana Titan ", "channel": "Panamericana", "account": "OM", "supervisor": "Fernando Romero", "target": 13, "w": [4, 4, 3, 2], "cat_target": {"SP": 0, "Tab": 0, "WR": 13, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [4, 4, 3, 2], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001430009", "store": "Alkomprar San Diego", "channel": "Alkomprar", "account": "OM", "supervisor": "Brayan Garcia", "target": 13, "w": [4, 4, 4, 1], "cat_target": {"SP": 0, "Tab": 0, "WR": 7, "AUD": 6}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [2, 2, 2, 1], "AUD": [2, 2, 2, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL66001430086", "store": "Alkomprar Pereira", "channel": "Alkomprar", "account": "OM", "supervisor": "Santiago Ayala", "target": 12, "w": [3, 3, 3, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 5, "AUD": 7}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [1, 1, 1, 2], "AUD": [2, 2, 2, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL08001430017", "store": "Alkomprar Unico Barranquilla", "channel": "Alkomprar", "account": "OM", "supervisor": "Renzo Bermudez", "target": 12, "w": [4, 4, 4, 0], "cat_target": {"SP": 0, "Tab": 0, "WR": 6, "AUD": 6}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [2, 2, 2, 0], "AUD": [2, 2, 2, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol08001110047", "store": "Cav B/Quilla Centro", "channel": "CLARO", "account": "CLARO", "supervisor": "Renzo Bermudez", "target": 12, "w": [3, 3, 3, 3], "cat_target": {"SP": 0, "Tab": 5, "WR": 3, "AUD": 4}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 2], "WR": [1, 1, 1, 0], "AUD": [1, 1, 1, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091803", "store": "Panamericana Bucaramanga", "channel": "Panamericana", "account": "OM", "supervisor": "Jhon Romero", "target": 12, "w": [3, 3, 3, 3], "cat_target": {"SP": 0, "Tab": 0, "WR": 12, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [3, 3, 3, 3], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol76520110492", "store": "Cav Palmira Centro", "channel": "CLARO", "account": "CLARO", "supervisor": "Santiago Ayala", "target": 11, "w": [3, 4, 3, 1], "cat_target": {"SP": 0, "Tab": 9, "WR": 2, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [2, 3, 2, 2], "WR": [1, 1, 1, -1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110211", "store": "Cav Santafe T", "channel": "CLARO", "account": "CLARO", "supervisor": "Julian Uribe", "target": 11, "w": [3, 4, 3, 1], "cat_target": {"SP": 0, "Tab": 9, "WR": 0, "AUD": 2}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [2, 3, 2, 2], "WR": [0, 0, 0, 0], "AUD": [1, 1, 1, -1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO091810", "store": "Panamericana Buenavista", "channel": "Panamericana", "account": "OM", "supervisor": "Renzo Bermudez", "target": 10, "w": [3, 3, 3, 1], "cat_target": {"SP": 0, "Tab": 0, "WR": 10, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [3, 3, 3, 1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol50001110784", "store": "Cav La Felicidad Bogota", "channel": "CLARO", "account": "CLARO", "supervisor": "Julian Uribe", "target": 10, "w": [3, 3, 3, 1], "cat_target": {"SP": 1, "Tab": 7, "WR": 2, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 1], "Tab": [2, 2, 2, 1], "WR": [1, 1, 1, -1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "sgsco083684", "store": "Cav Parque Alegra", "channel": "CLARO", "account": "CLARO", "supervisor": "Renzo Bermudez", "target": 9, "w": [2, 3, 2, 2], "cat_target": {"SP": 0, "Tab": 9, "WR": 0, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [2, 3, 2, 2], "WR": [0, 0, 0, 0], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110100", "store": "Cav Bogota Toberin", "channel": "CLARO", "account": "CLARO", "supervisor": "Julian Uribe", "target": 7, "w": [2, 2, 2, 1], "cat_target": {"SP": 2, "Tab": 0, "WR": 1, "AUD": 4}, "cat_w": {"SP": [1, 1, 1, -1], "Tab": [0, 0, 0, 0], "WR": [0, 0, 0, 1], "AUD": [1, 1, 1, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001110060", "store": "Cav Bogota Cra 8", "channel": "CLARO", "account": "CLARO", "supervisor": "Luisa Ordoñez", "target": 6, "w": [1, 1, 1, 3], "cat_target": {"SP": 0, "Tab": 5, "WR": 1, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 2], "WR": [0, 0, 0, 1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol25754110115", "store": "Cav Ventura Terrero", "channel": "CLARO", "account": "CLARO", "supervisor": "Tatiana Barragan", "target": 6, "w": [2, 2, 2, 0], "cat_target": {"SP": 0, "Tab": 6, "WR": 0, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [2, 2, 2, 0], "WR": [0, 0, 0, 0], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol68615110095", "store": "Cav Rionegro", "channel": "CLARO", "account": "CLARO", "supervisor": "Sneider Estevez", "target": 6, "w": [2, 2, 2, 0], "cat_target": {"SP": 0, "Tab": 4, "WR": 2, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 1], "WR": [1, 1, 1, -1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol08001110048", "store": "Cav Barranquilla Metropolitano", "channel": "CLARO", "account": "CLARO", "supervisor": "Renzo Bermudez", "target": 6, "w": [1, 1, 1, 3], "cat_target": {"SP": 1, "Tab": 4, "WR": 1, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 1], "Tab": [1, 1, 1, 1], "WR": [0, 0, 0, 1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol76001110053", "store": "Cav Cali Palmetto", "channel": "CLARO", "account": "CLARO", "supervisor": "Juan David Mahecha", "target": 5, "w": [1, 1, 1, 2], "cat_target": {"SP": 0, "Tab": 4, "WR": 0, "AUD": 1}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 1], "WR": [0, 0, 0, 0], "AUD": [0, 0, 0, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110056", "store": "Cav Bogota Chapinero", "channel": "CLARO", "account": "CLARO", "supervisor": "Viviana Sepulveda", "target": 5, "w": [1, 1, 1, 2], "cat_target": {"SP": 0, "Tab": 4, "WR": 1, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 1], "WR": [0, 0, 0, 1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SGSCO093271", "store": "Tienda Paseo Villa Del Rio", "channel": "CLARO", "account": "CLARO", "supervisor": "Ingrid Diaz", "target": 5, "w": [1, 1, 1, 2], "cat_target": {"SP": 0, "Tab": 5, "WR": 0, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 2], "WR": [0, 0, 0, 0], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol76001110073", "store": "Cav Cali Jardin", "channel": "CLARO", "account": "CLARO", "supervisor": "Juan David Mahecha", "target": 5, "w": [1, 1, 1, 2], "cat_target": {"SP": 0, "Tab": 5, "WR": 0, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 2], "WR": [0, 0, 0, 0], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol66001110087", "store": "Cav Pereira Estacion Central", "channel": "CLARO", "account": "CLARO", "supervisor": "Santiago Ayala", "target": 5, "w": [1, 1, 1, 2], "cat_target": {"SP": 0, "Tab": 4, "WR": 0, "AUD": 1}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, 1], "WR": [0, 0, 0, 0], "AUD": [0, 0, 0, 1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol76001110051", "store": "Cav Cali Norte", "channel": "CLARO", "account": "CLARO", "supervisor": "Santiago Ayala", "target": 5, "w": [2, 2, 2, -1], "cat_target": {"SP": 2, "Tab": 1, "WR": 0, "AUD": 2}, "cat_w": {"SP": [1, 1, 1, -1], "Tab": [0, 0, 0, 1], "WR": [0, 0, 0, 0], "AUD": [1, 1, 1, -1]}, "promoters": 1, "tabletSpecialist": false}, {"code": "scol11001110070", "store": "Cav Bogota Floresta", "channel": "CLARO", "account": "CLARO", "supervisor": "Fernando Romero", "target": 4, "w": [2, 2, 2, -2], "cat_target": {"SP": 0, "Tab": 2, "WR": 2, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [1, 1, 1, -1], "WR": [1, 1, 1, -1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL05001230735", "store": "Panamericana Molinos Medellin", "channel": "Panamericana", "account": "OM", "supervisor": "Brayan Garcia", "target": 3, "w": [1, 1, 1, 0], "cat_target": {"SP": 0, "Tab": 0, "WR": 3, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [1, 1, 1, 0], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001331284", "store": "ALMACEN-19 CENTRO KR 7 CON 18", "channel": "Panamericana", "account": "OM", "supervisor": "Ruben Cedeño", "target": 2, "w": [1, 1, 1, -1], "cat_target": {"SP": 0, "Tab": 0, "WR": 2, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [1, 1, 1, -1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}, {"code": "SCOL11001430444", "store": "Panamericana Avenida Chile", "channel": "Panamericana", "account": "OM", "supervisor": "Viviana Sepulveda", "target": 1, "w": [0, 0, 0, 1], "cat_target": {"SP": 0, "Tab": 0, "WR": 1, "AUD": 0}, "cat_w": {"SP": [0, 0, 0, 0], "Tab": [0, 0, 0, 0], "WR": [0, 0, 0, 1], "AUD": [0, 0, 0, 0]}, "promoters": 1, "tabletSpecialist": false}];
+
+const SUPERVISORS = [{"name": "Angie Rocio Calderon Arenis", "codes": ["SCOL54001430393", "SCOL68001430304", "SCOL68276430391", "scol54001110061"]}, {"name": "Bermúdez Sariel Renzo Rafael", "codes": ["SCOL08001430017", "SCOL08001430045", "SCOL13001430187", "SCOL70001430162", "SGSCO027719", "SGSCO082615", "SGSCO091810", "SGSCO093929", "scol08001110047", "scol08001110048", "scol13001110613", "scol47001110097", "sgsco083684"]}, {"name": "Cedeño Cordoba Ruben Alejandro", "codes": ["SCOL11001331284", "SCOL11001430310", "SCOL25175430566", "SCOL25175430571", "SCOL25473430308", "SGSCO091804", "scol11001110041", "scol11001110071", "scol17380110030", "scol25473110488"]}, {"name": "Diaz Hernandez Ingrid Kimberly", "codes": ["SCOL11001430312", "SGSCO080919", "SGSCO093271", "scol11001110037", "scol11001110076", "scol11001110112", "scol11001110681", "scol25754110099", "scol50001110792"]}, {"name": "Estevez Perez Sneider", "codes": ["SCOL05001430006", "SCOL05001430197", "SCOL05001430311", "SCOL05001430314", "SCOL68615430008", "SGSCO027718", "SGSCO091812", "scol05001110458", "scol05266110682", "scol68615110095"]}, {"name": "García Arana Brayan Steven", "codes": ["SCOL05001230735", "SCOL05001430004", "SCOL05001430007", "SCOL05001430009", "SCOL05001430195", "SCOL05001430295", "SCOL05088430002", "SGSCO027720", "SGSCO080811", "SGSCO093272", "scol05001110077", "scol05001110080", "scol05088110092"]}, {"name": "Mahecha De La Portilla Juan David", "codes": ["SCOL76001430015", "SCOL76001430572", "SGSCO080589", "scol19001110089", "scol76001110053", "scol76001110073", "scol76147110033"]}, {"name": "Ordoñez Pasaje Luisa Fernanda", "codes": ["SCOL11001110060", "SCOL11001430020", "SCOL25290110449", "SCOL73001110455", "SGSCO073963", "scol11001110058", "scol11001110094", "scol11001110105", "scol19290110069", "scol41001110082", "scol73001110262"]}, {"name": "Romero Herrera Manuel Fernando", "codes": ["SCOL11001430013", "SCOL11001430014", "SCOL11001430199", "SCOL11001430315", "SCOL15001430159", "SCOL50001430021", "SCOL50001430285", "SCOL50001430317", "SGSCO091805", "scol11001110070", "scol11001110110", "scol15001110102", "scol50001110106", "scol85001110107"]}, {"name": "Romero Mendez Jhon Alexander", "codes": ["SCOL68001430003", "SCOL68001430180", "SCOL68001430274", "SCOL68547430038", "SGSCO091803", "scol68001110045", "scol68001110046", "scol68081110049"]}, {"name": "Santiago Ayala Bahamon", "codes": ["SCOL17001430293", "SCOL17001430299", "SCOL66001430019", "SCOL66001430086", "SCOL66001430179", "SCOL76001430010", "SCOL76001430130", "SCOL76001430203", "SGSCO032510", "SGSCO085439", "scol66001110087", "scol76001110051", "scol76520110492"]}, {"name": "Sepulveda Camacho Viviana Carolina", "codes": ["SCOL11001430033", "SCOL11001430188", "SCOL11001430189", "SCOL11001430194", "SCOL11001430444", "SCOL73001430085", "SCOL73001430210", "SGSCO027717", "scol11001110056", "scol11001110824", "scol25307110450"]}, {"name": "Tatiana Barragan", "codes": ["SCOL11001430181", "SCOL11001430303", "SCOL11001430307", "SCOL25754430039", "SGSCO087548", "SGSCO091799", "scol11001110830", "scol25754110115"]}, {"name": "Uribe Benitez Julian Alberto", "codes": ["SCOL11001430012", "SCOL11001430046", "SCOL11001430129", "SCOL11001430196", "SCOL11001430200", "SCOL11001430313", "SCOL11001430316", "SGSCO091802", "SGSCO091806", "scol11001110100", "scol11001110211", "scol11001110212", "scol50001110784"]}, {"name": "Zamora Melo Leidy Johanna", "codes": ["C200", "C230"]}];
+const ADMIN_PASSWORD = "Huawei2026";
+const SUPERVISOR_PASSWORD = "equipo2026";
+
+const CAT_ORDER = ['SP','Tab','WR','AUD'];
+const CAT_LABEL = {SP:'Smartphones', Tab:'Tablets', WR:'Wearables', AUD:'Audio'};
+const CAT_COLOR = {SP:'#C7000B', Tab:'#B8790A', WR:'#157F49', AUD:'#3060C7'};
+
+/* Roles de promotor por tienda. La mayoría de tiendas tiene 1 solo promotor
+   (rol implícito 'P1', sin pedir selección). Las que tienen más de 1
+   (s.promoters > 1) piden elegir "Promotor 1/2/3...". Las que además tienen
+   un promotor exclusivo de Tablets (s.tabletSpecialist) suman un rol "TAB"
+   que solo reporta esa categoría, y el resto de roles de esa tienda dejan
+   de reportar Tablets (esa cuota es 100% del especialista). */
+function storeRoles(store){
+  const roles = [];
+  const n = Math.max(1, store.promoters || 1);
+  for(let i=1;i<=n;i++) roles.push({ key: 'P'+i, label: 'Promotor '+i, cats: (store.tabletSpecialist ? CAT_ORDER.filter(c=>c!=='Tab') : CAT_ORDER) });
+  if(store.tabletSpecialist) roles.push({ key: 'TAB', label: 'Promotor Tablets', cats: ['Tab'] });
+  return roles;
+}
+
+const STORAGE_KEY = "ventas_agosto_2026_cat"; // se usa como respaldo local si el API falla
+
+/* ============ CONFIG: backend en Google Sheets (Apps Script) ============
+   1. Despliega el Apps Script (ver Code.gs que te compartí) como Web App.
+   2. Pega aquí la URL que termina en /exec.                                 */
+const API_URL = "https://script.google.com/macros/s/AKfycbxVVQ5_AFf9pAacm6BP-a6OTmJXfpxRoPbyO1dxcUFq9TcPgPc6HbDC8Rd4AvXVr37Y/exec";
+
+/* ============ helpers ============ */
+function fmt(n){ return Math.round(n).toLocaleString('es-CO'); }
+function pad(n){ return n.toString().padStart(2,'0'); }
+/* normaliza claves de fecha: acepta 'yyyy-MM-dd' o el formato Date.toString() de JS
+   (por si alguna fila del Sheet quedó guardada como fecha real en vez de texto) */
+function normalizeIsoKey(key){
+  if(/^\d{4}-\d{2}-\d{2}$/.test(key)) return key;
+  const d = new Date(key);
+  if(!isNaN(d.getTime())){
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  return key;
+}
+function normalizedEntries(salesMap){
+  return Object.entries(salesMap||{}).map(([iso,e])=>[normalizeIsoKey(iso), e]);
+}
+function todayISO(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function dateLabel(iso){
+  const [y,m,d] = iso.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  return dt.toLocaleDateString('es-CO', {day:'numeric', month:'short'});
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2400);
+}
+function normalize(s){
+  return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function escapeHtml(s){
+  return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function highlightMatch(text, term){
+  if(!term) return escapeHtml(text);
+  const nText = normalize(text);
+  const nTerm = normalize(term);
+  const idx = nText.indexOf(nTerm);
+  if(idx===-1) return escapeHtml(text);
+  return escapeHtml(text.slice(0,idx)) + '<mark>' + escapeHtml(text.slice(idx, idx+term.length)) + '</mark>' + escapeHtml(text.slice(idx+term.length));
+}
+/* Un día guardado puede venir en 3 formas (por compatibilidad con datos viejos):
+   - número suelto (formato inicial)                         -> 1 solo promotor
+   - {SP:n, Tab:n, WR:n, AUD:n} (formato sin roles)           -> 1 solo promotor
+   - {P1:{SP:n,...}, P2:{...}, TAB:{...}} (formato con roles) -> multi-promotor
+   dayPromoterEntries() siempre devuelve [ [rolKey, {SP,Tab,WR,AUD}], ... ] */
+function isRoleMap(obj){
+  const keys = Object.keys(obj);
+  return keys.length>0 && keys.every(k=>/^(P\d+|TAB)$/.test(k));
+}
+function dayPromoterEntries(entry){
+  if(!entry) return [];
+  if(typeof entry === 'number') return [['P1', {SP:entry,Tab:0,WR:0,AUD:0}]];
+  if(isRoleMap(entry)) return Object.entries(entry);
+  return [['P1', entry]];
+}
+function dayTotal(entry){
+  return dayPromoterEntries(entry).reduce((a,[,cats])=> a + CAT_ORDER.reduce((s,c)=>s+Number(cats[c]||0),0), 0);
+}
+function dayCat(entry, cat){
+  return dayPromoterEntries(entry).reduce((a,[,cats])=> a + Number(cats[cat]||0), 0);
+}
+function dayRole(entry, roleKey){
+  const found = dayPromoterEntries(entry).find(([k])=>k===roleKey);
+  return found ? found[1] : {SP:0,Tab:0,WR:0,AUD:0};
+}
+
+
+/* Semanas del mes derivadas de los pesos W1..W4 del archivo de target,
+   repartidas en bloques consecutivos de días (W1 primero, ... W4 = saldo). */
+function buildWeeks(){
+  const weeks = [];
+  let dayCursor = 1;
+  let assigned = 0;
+  for(let i=0;i<WEEK_WEIGHTS.length;i++){
+    const isLast = i===WEEK_WEIGHTS.length-1;
+    let numDays;
+    if(isLast){ numDays = DAYS_IN_MONTH - assigned; }
+    else { numDays = Math.round(WEEK_WEIGHTS[i]*DAYS_IN_MONTH); }
+    const start = new Date(TARGET_YEAR, TARGET_MONTH, dayCursor);
+    const end = new Date(TARGET_YEAR, TARGET_MONTH, dayCursor+numDays-1);
+    weeks.push({num:i+1, start, end, weight:WEEK_WEIGHTS[i]});
+    dayCursor += numDays; assigned += numDays;
+  }
+  return weeks;
+}
+const WEEKS = buildWeeks();
+
+function weekOfDate(iso){
+  const [y,m,d] = iso.split('-').map(Number);
+  const dt = new Date(y,m-1,d);
+  for(const w of WEEKS){ if(dt >= w.start && dt <= w.end) return w.num; }
+  return null;
+}
+function currentWeekNum(){
+  const now = new Date();
+  if(now.getFullYear()===TARGET_YEAR && now.getMonth()===TARGET_MONTH){
+    return weekOfDate(todayISO()) || WEEKS[WEEKS.length-1].num;
+  }
+  return WEEKS[WEEKS.length-1].num;
+}
+
+/* ============ storage (Google Sheets vía Apps Script, JSONP) ============
+   Usamos una etiqueta <script> en vez de fetch() para evitar por completo
+   los problemas de CORS al conectar con Apps Script.                     */
+function jsonpRequest(params){
+  return new Promise((resolve, reject)=>{
+    const cbName = '__jsonp_cb_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    let timeoutId;
+    function cleanup(){
+      clearTimeout(timeoutId);
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = (data)=>{ cleanup(); resolve(data); };
+    const qs = new URLSearchParams({...params, callback: cbName}).toString();
+    script.src = `${API_URL}?${qs}`;
+    script.onerror = ()=>{ cleanup(); reject(new Error('jsonp load error')); };
+    timeoutId = setTimeout(()=>{ cleanup(); reject(new Error('jsonp timeout')); }, 12000);
+    document.body.appendChild(script);
+  });
+}
+
+async function loadAllSales(){
+  try{
+    const data = await jsonpRequest({action:'getAll', t: Date.now()});
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); // respaldo local por si falla la conexión
+    return data;
+  }catch(e){
+    showToast('Sin conexión al servidor, mostrando último dato guardado');
+    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e2){ return {}; }
+  }
+}
+async function saveEntry(storeCode, iso, roleKey, catAmounts){
+  try{
+    const data = await jsonpRequest({
+      action:'save', storeCode, date: iso, promoter: roleKey || 'P1',
+      SP: catAmounts.SP||0, Tab: catAmounts.Tab||0, WR: catAmounts.WR||0, AUD: catAmounts.AUD||0
+    });
+    return !!(data && data.ok);
+  }catch(e){ return false; }
+}
+
+/* ============ status logic ============ */
+function statusFor(projectedPct){
+  if(projectedPct >= 100) return {cls:'pill-green', label:'Vas a cumplir el mes'};
+  if(projectedPct >= 85) return {cls:'pill-amber', label:'Cerca de cumplir'};
+  return {cls:'pill-red', label:'Riesgo de no cumplir'};
+}
+
+/* ============ render: root router ============ */
+let currentStore = null;
+let selectedRoleKey = null; // rol de promotor activo dentro de una tienda multi-promotor
+let comboTerm = "";
+let comboOpen = false;
+let comboHi = -1;
+let adminFilter = "TODOS";
+let adminViewMode = 'month'; // 'month' | 'week' — vista del resumen de supervisión
+let adminTab = 'cumplimiento'; // 'cumplimiento' | 'categoria' | 'carga' | 'reporte'
+let adminLoadDate = null; // fecha seleccionada en la pestaña "Carga de hoy" (default: hoy)
+let catViewMode = 'month'; // 'month' | 'week'
+let authStage = null; // null | 'gate'
+let authRole = 'admin'; // 'admin' | 'supervisor'
+let authError = '';
+let authSupName = SUPERVISORS[0] ? SUPERVISORS[0].name : '';
+
+function render(){
+  const app = document.getElementById('app');
+  if(authStage==='gate' && !window.__showAdmin){
+    app.innerHTML = renderAuthGate();
+    bindAuthGate();
+  } else if(!currentStore && !window.__showAdmin){
+    app.innerHTML = renderPicker();
+    bindPicker();
+  } else if(window.__showAdmin && window.__storeDetailCode){
+    renderStoreDetail(window.__storeDetailCode);
+  } else if(window.__showAdmin){
+    renderAdmin();
+  } else {
+    renderDashboard();
+  }
+}
+function openStoreDetail(code){
+  window.__storeDetailCode = code;
+  render();
+}
+
+/* ---------- AUTH GATE (acceso restringido: admin / supervisor) ---------- */
+function renderAuthGate(){
+  const supOptions = [...SUPERVISORS].sort((a,b)=>a.name.localeCompare(b.name,'es'))
+    .map(s=>`<option value="${escapeHtml(s.name)}" ${s.name===authSupName?'selected':''}>${escapeHtml(s.name)}</option>`).join('');
+  return `
+  <div class="topbar">
+    <button class="backbtn" id="authBack">‹ Volver</button>
+    <div class="eyebrow">Field Force · Cumplimiento</div>
+    <h1>Acceso restringido</h1>
+  </div>
+  <div class="section" style="padding-top:22px;">
+    <div class="cat-toggle">
+      <span class="filter-chip ${authRole==='supervisor'?'active':''}" data-role="supervisor">Soy supervisor</span>
+      <span class="filter-chip ${authRole==='admin'?'active':''}" data-role="admin">Soy administrador</span>
+    </div>
+    <div class="card">
+      ${authRole==='supervisor' ? `
+      <label class="fieldlabel">Tu nombre</label>
+      <select id="authSupSelect">${supOptions}</select>
+      <div style="height:10px;"></div>
+      ` : ``}
+      <label class="fieldlabel">Contraseña</label>
+      <input type="password" id="authPassInput" placeholder="••••••••" autocomplete="off" />
+      ${authError? `<div style="color:var(--red);font-size:12.5px;font-weight:600;margin-top:8px;">${escapeHtml(authError)}</div>` : ``}
+      <div style="height:14px;"></div>
+      <button class="primary" id="authSubmit">Entrar</button>
+    </div>
+  </div>
+  `;
+}
+function bindAuthGate(){
+  document.getElementById('authBack').addEventListener('click', ()=>{ authStage=null; authError=''; render(); });
+  document.querySelectorAll('.cat-toggle .filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ authRole = chip.dataset.role; authError=''; render(); });
+  });
+  const submit = ()=>{
+    const pass = document.getElementById('authPassInput').value;
+    if(authRole==='admin'){
+      if(pass===ADMIN_PASSWORD){
+        window.__showAdmin = true; window.__adminScope = null;
+        authStage=null; authError=''; render();
+      } else { authError = 'Contraseña incorrecta.'; render(); }
+    } else {
+      const supName = document.getElementById('authSupSelect').value;
+      if(pass===SUPERVISOR_PASSWORD){
+        const sup = SUPERVISORS.find(s=>s.name===supName);
+        window.__showAdmin = true;
+        window.__adminScope = sup ? {supervisor: sup.name, codes: sup.codes} : null;
+        authStage=null; authError=''; render();
+      } else { authError = 'Contraseña incorrecta.'; render(); }
+    }
+  };
+  document.getElementById('authSubmit').addEventListener('click', submit);
+  document.getElementById('authPassInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') submit(); });
+}
+
+/* ---------- PICKER (combobox con autocompletado, orden alfabético) ---------- */
+const SORTED_STORES = [...STORES].sort((a,b)=> a.store.localeCompare(b.store,'es'));
+
+function comboFilteredList(){
+  const term = comboTerm.trim();
+  if(!term) return SORTED_STORES;
+  const nTerm = normalize(term);
+  return SORTED_STORES.filter(s => normalize(s.store).includes(nTerm) || normalize(s.code).includes(nTerm));
+}
+
+function renderPicker(){
+  return `
+  <div class="topbar">
+    <div class="eyebrow">Field Force · Cumplimiento</div>
+    <h1>Elige tu punto de venta</h1>
+  </div>
+  <div class="combo-wrap">
+    <label class="combo-label">Punto de venta</label>
+    <div class="combo-input-wrap">
+      <input id="comboInput" autocomplete="off" placeholder="Escribe el nombre de tu tienda..." value="${escapeHtml(comboTerm)}" />
+      <span class="combo-caret">▾</span>
+      <div id="comboList" class="combo-list ${comboOpen?'open':''}"></div>
+    </div>
+  </div>
+  <div class="footer-note" style="padding-top:26px;"><span class="linkbtn" id="adminLink">Acceso de supervisión</span></div>
+  `;
+}
+
+function renderComboList(){
+  const list = document.getElementById('comboList');
+  if(!list) return;
+  const items = comboFilteredList();
+  if(items.length===0){
+    list.innerHTML = `<div class="combo-empty">No encontramos tiendas con ese nombre.</div>`;
+  } else {
+    list.innerHTML = items.map((s,i)=>`
+      <div class="combo-opt ${i===comboHi?'hi':''}" data-code="${s.code}">
+        <div class="n">${highlightMatch(s.store, comboTerm)}</div>
+        <div class="s">${s.code} · ${s.account||s.channel||''}${s.supervisor?(' · '+escapeHtml(s.supervisor)):''}</div>
+      </div>`).join('');
+  }
+  list.classList.toggle('open', comboOpen);
+  list.querySelectorAll('.combo-opt').forEach(el=>{
+    el.addEventListener('mousedown', (e)=>{ e.preventDefault(); selectStore(el.dataset.code); });
+  });
+}
+
+function selectStore(code){
+  currentStore = STORES.find(s=>s.code===code);
+  selectedRoleKey = null;
+  comboTerm = ""; comboOpen = false; comboHi = -1;
+  render();
+}
+
+function bindPicker(){
+  const input = document.getElementById('comboInput');
+  renderComboList();
+  input.addEventListener('focus', ()=>{ comboOpen = true; comboHi=-1; renderComboList(); });
+  input.addEventListener('input', (e)=>{ comboTerm = e.target.value; comboOpen = true; comboHi = -1; renderComboList(); });
+  input.addEventListener('keydown', (e)=>{
+    const items = comboFilteredList();
+    if(e.key==='ArrowDown'){ e.preventDefault(); comboHi = Math.min(items.length-1, comboHi+1); renderComboList(); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); comboHi = Math.max(0, comboHi-1); renderComboList(); }
+    else if(e.key==='Enter'){ e.preventDefault(); if(comboHi>=0 && items[comboHi]) selectStore(items[comboHi].code); }
+    else if(e.key==='Escape'){ comboOpen=false; renderComboList(); }
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.combo-input-wrap')){ comboOpen=false; const l=document.getElementById('comboList'); if(l) l.classList.remove('open'); }
+  }, {once:true});
+  const al = document.getElementById('adminLink');
+  if(al) al.addEventListener('click', ()=>{ authStage='gate'; authError=''; render(); });
+}
+
+/* ---------- DASHBOARD ---------- */
+function ringSvg(pct, size, strokeW, color, fontSize){
+  const r = (size/2) - strokeW;
+  const circ = 2*Math.PI*r;
+  const clamped = Math.max(0, Math.min(100, pct));
+  const dash = (clamped/100)*circ;
+  const c = size/2;
+  return `
+  <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${strokeW}"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeW}"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round" transform="rotate(-90 ${c} ${c})"/>
+    <text x="${c}" y="${c+fontSize*0.35}" text-anchor="middle" style="font-family:Poppins;font-weight:800;font-size:${fontSize}px;fill:var(--ink);">${Math.round(pct)}%</text>
+  </svg>`;
+}
+
+function catRowsHtml(soldByCat, targetByCat){
+  return CAT_ORDER.map(c=>{
+    const sold = soldByCat[c]||0;
+    const tgt = Math.max(0, targetByCat[c]||0);
+    const pct = tgt>0 ? Math.min(100, sold/tgt*100) : (sold>0?100:0);
+    return `<div class="cat-row">
+      <div class="cat-head"><span class="cn">${CAT_LABEL[c]}</span><span class="cv">${fmt(sold)} / ${fmt(tgt)} · ${tgt>0?Math.round(sold/tgt*100):0}%</span></div>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${pct}%;background:${CAT_COLOR[c]};"></div></div>
+    </div>`;
+  }).join('');
+}
+
+async function renderDashboard(){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="section" style="text-align:center;color:#888;padding-top:60px;">Cargando datos...</div>`;
+  const all = await loadAllSales();
+  const salesMap = all[currentStore.code] || {};
+  const entries = normalizedEntries(salesMap).filter(([iso])=> iso.startsWith(`${TARGET_YEAR}-${pad(TARGET_MONTH+1)}`));
+  const totalSold = entries.reduce((a,[,e])=>a+dayTotal(e),0);
+  const target = currentStore.target;
+  const pctMonth = target>0 ? (totalSold/target*100) : 0;
+
+  const roles = storeRoles(currentStore);
+  if(!selectedRoleKey || !roles.find(r=>r.key===selectedRoleKey)) selectedRoleKey = roles[0].key;
+  const activeRole = roles.find(r=>r.key===selectedRoleKey);
+
+  // -------- semana actual --------
+  const wNum = currentWeekNum();
+  const weekTarget = Math.max(0, currentStore.w ? currentStore.w[wNum-1] : (target/WEEKS.length));
+  let weekSold = 0;
+  entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===wNum) weekSold += dayTotal(e); });
+  const pctWeek = weekTarget>0 ? (weekSold/weekTarget*100) : 0;
+
+  // -------- proyección: según días efectivamente cargados y días hábiles restantes --------
+  const daysWorked = entries.length;
+  const dailyAvg = daysWorked>0 ? totalSold/daysWorked : 0;
+  const daysRemaining = Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked);
+  const projected = totalSold + dailyAvg*daysRemaining;
+  const projectedPct = target>0 ? (projected/target*100) : 0;
+  const st = statusFor(projectedPct);
+
+  // -------- categorías (mes o semana según toggle) --------
+  const soldByCatMonth = {SP:0,Tab:0,WR:0,AUD:0};
+  entries.forEach(([,e])=>{ CAT_ORDER.forEach(c=> soldByCatMonth[c]+=dayCat(e,c)); });
+  const soldByCatWeek = {SP:0,Tab:0,WR:0,AUD:0};
+  entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===wNum) CAT_ORDER.forEach(c=> soldByCatWeek[c]+=dayCat(e,c)); });
+  const targetByCatMonth = currentStore.cat_target || {SP:0,Tab:0,WR:0,AUD:0};
+  const targetByCatWeek = {};
+  CAT_ORDER.forEach(c=> targetByCatWeek[c] = currentStore.cat_w && currentStore.cat_w[c] ? currentStore.cat_w[c][wNum-1] : 0);
+
+  // -------- todas las semanas --------
+  const now = new Date();
+  const isCurrentMonth = now.getFullYear()===TARGET_YEAR && now.getMonth()===TARGET_MONTH;
+  let weekHtml = '';
+  WEEKS.forEach(w=>{
+    const wt = Math.max(0, currentStore.w ? currentStore.w[w.num-1] : (target/WEEKS.length));
+    let wSold = 0;
+    entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===w.num) wSold += dayTotal(e); });
+    const wPct = wt>0 ? (wSold/wt*100) : 0;
+    const isPast = isCurrentMonth ? (w.end < now && w.num !== wNum) : true;
+    const isCurrent = isCurrentMonth && w.num===wNum;
+    let badge;
+    if(isCurrent) badge = `<span class="badge pill-amber">En curso</span>`;
+    else if(isPast) badge = wPct>=100 ? `<span class="badge pill-green">Cumplió</span>` : `<span class="badge pill-red">No cumplió</span>`;
+    else badge = `<span class="badge" style="background:var(--surface);color:var(--ink-soft);">Próxima</span>`;
+    weekHtml += `<div class="week-card ${isCurrent?'current':''}">
+      <div><div class="week-name">Semana ${w.num}${badge}</div>
+        <div class="week-range">${w.start.toLocaleDateString('es-CO',{day:'numeric',month:'short'})} – ${w.end.toLocaleDateString('es-CO',{day:'numeric',month:'short'})}</div></div>
+      <div class="week-nums"><b>${fmt(wSold)}</b> / ${fmt(wt)}<br><span style="color:var(--ink-soft)">${Math.round(wPct)}%</span></div>
+    </div>`;
+  });
+
+  // history (last 10)
+  const sortedEntries = [...entries].sort((a,b)=> a[0]<b[0]?1:-1);
+  let histHtml = sortedEntries.slice(0,10).map(([iso,e])=>{
+    const parts = CAT_ORDER.filter(c=>dayCat(e,c)>0).map(c=>`${CAT_LABEL[c]} ${dayCat(e,c)}`).join(' · ');
+    return `<div class="hist-row">
+      <div class="hist-top"><span class="hist-date">${dateLabel(iso)}</span><span class="hist-units">${fmt(dayTotal(e))} u.</span></div>
+      ${parts? `<div class="hist-breakdown">${parts}</div>` : ''}
+    </div>`;
+  }).join('') || `<div class="hist-row" style="color:var(--ink-soft);text-align:center;">Aún no hay registros este mes.</div>`;
+
+  app.innerHTML = `
+  <div class="topbar">
+    <button class="backbtn" id="backBtn">‹ Cambiar tienda</button>
+    <div class="eyebrow">${currentStore.account || currentStore.channel} · ${currentStore.code}</div>
+    <h1>${currentStore.store}</h1>
+  </div>
+
+  <div class="section" style="padding-top:22px;">
+    <div class="card quota-card">
+      <div class="label-eyebrow" style="color:rgba(255,255,255,0.75);">Tu cuota · ${TARGET_MONTH_LABEL}</div>
+      <div class="quota-main-row">
+        <div><div class="quota-big">${fmt(target)}</div><div class="quota-tag">unidades este mes</div></div>
+        <div class="quota-div"></div>
+        <div><div class="quota-big">${fmt(weekTarget)}</div><div class="quota-tag">Semana ${wNum} (actual)</div></div>
+      </div>
+      <div class="quota-cats">
+        ${CAT_ORDER.map(c=>`<div class="quota-cat-chip"><span>${CAT_LABEL[c]}</span><b>${fmt(Math.max(0,(currentStore.cat_target&&currentStore.cat_target[c])||0))}</b></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="gauge-row">
+        <div class="gauge-col">
+          ${ringSvg(pctMonth, 148, 13, pctMonth>=100?'var(--green)':'var(--red)', 26)}
+          <div class="gauge-tag">Mes</div>
+          <div class="gauge-sub">${fmt(totalSold)} / ${fmt(target)} u.</div>
+        </div>
+        <div class="gauge-col">
+          ${ringSvg(pctWeek, 148, 13, pctWeek>=100?'var(--green)':'var(--red)', 26)}
+          <div class="gauge-tag">Semana ${wNum}</div>
+          <div class="gauge-sub">${fmt(weekSold)} / ${fmt(weekTarget)} u.</div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <span class="status-pill ${st.cls}">${st.label}</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="v">${daysWorked}</div><div class="l">Días cargados</div></div>
+        <div class="stat"><div class="v">${fmt(dailyAvg)}</div><div class="l">Prom. x día</div></div>
+        <div class="stat"><div class="v">${fmt(projected)}</div><div class="l">Proy. cierre mes</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Registrar ventas de hoy — por categoría</div>
+      ${roles.length>1 ? `
+      <label class="fieldlabel" style="margin-top:6px;">¿Quién eres?</label>
+      <div class="cat-toggle" id="roleToggle">
+        ${roles.map(r=>`<span class="filter-chip ${r.key===selectedRoleKey?'active':''}" data-role="${r.key}">${r.label}</span>`).join('')}
+      </div>
+      ` : ``}
+      <label class="fieldlabel" style="margin-top:6px;">Fecha</label>
+      <input type="date" id="dateInput" value="${todayISO()}" min="${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-01" max="${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-${pad(DAYS_IN_MONTH)}"/>
+      <div class="cat-input-grid" id="catInputGrid">
+        ${activeRole.cats.map(c=>`
+        <div class="cat-input-item">
+          <label>${CAT_LABEL[c]}</label>
+          <input type="number" min="0" inputmode="numeric" placeholder="0" class="catInput" data-cat="${c}" />
+        </div>`).join('')}
+      </div>
+      <div class="day-total-line"><span>Total del día</span><b id="dayTotalPreview">0</b></div>
+      <div style="height:12px;"></div>
+      <button class="primary" id="saveBtn">Guardar venta del día</button>
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Avance por categoría</div>
+      <div class="cat-toggle" id="catViewToggle">
+        <span class="filter-chip ${catViewMode==='month'?'active':''}" data-mode="month">Este mes</span>
+        <span class="filter-chip ${catViewMode==='week'?'active':''}" data-mode="week">Semana ${wNum}</span>
+      </div>
+      <div id="catRows">${catRowsHtml(catViewMode==='month'?soldByCatMonth:soldByCatWeek, catViewMode==='month'?targetByCatMonth:targetByCatWeek)}</div>
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Avance por semana</div>
+      ${weekHtml}
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Historial reciente</div>
+      ${histHtml}
+    </div>
+  </div>
+  `;
+
+  document.getElementById('backBtn').addEventListener('click', ()=>{ currentStore=null; selectedRoleKey=null; render(); });
+
+  document.querySelectorAll('#roleToggle .filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ selectedRoleKey = chip.dataset.role; renderDashboard(); });
+  });
+
+  function recalcPreview(){
+    let t = 0;
+    document.querySelectorAll('.catInput').forEach(inp=> t += Number(inp.value)||0);
+    document.getElementById('dayTotalPreview').textContent = fmt(t);
+  }
+  document.querySelectorAll('.catInput').forEach(inp=> inp.addEventListener('input', recalcPreview));
+
+  document.getElementById('dateInput').addEventListener('change', (e)=>{
+    const iso = e.target.value;
+    const existing = salesMap[iso];
+    const roleCats = dayRole(existing, selectedRoleKey);
+    document.querySelectorAll('.catInput').forEach(inp=>{
+      const c = inp.dataset.cat;
+      inp.value = existing ? (Number(roleCats[c])||'') : '';
+    });
+    recalcPreview();
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', async ()=>{
+    const iso = document.getElementById('dateInput').value;
+    if(!iso){ showToast('Elige una fecha'); return; }
+    const catAmounts = {SP:0,Tab:0,WR:0,AUD:0};
+    let total = 0;
+    let invalid = false;
+    document.querySelectorAll('.catInput').forEach(inp=>{
+      const v = inp.value===''? 0 : Number(inp.value);
+      if(isNaN(v) || v<0) invalid = true;
+      catAmounts[inp.dataset.cat] = v;
+      total += v;
+    });
+    if(invalid){ showToast('Ingresa números válidos'); return; }
+    if(total===0){ showToast('Ingresa al menos una unidad en alguna categoría'); return; }
+    const btn = document.getElementById('saveBtn');
+    btn.textContent = 'Guardando...'; btn.disabled = true;
+    const ok = await saveEntry(currentStore.code, iso, selectedRoleKey, catAmounts);
+    if(ok){ showToast('Venta guardada ✓'); renderDashboard(); }
+    else { showToast('No se pudo guardar, intenta de nuevo'); btn.textContent='Guardar venta del día'; btn.disabled=false; }
+  });
+
+  document.querySelectorAll('#catViewToggle .filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ catViewMode = chip.dataset.mode; renderDashboard(); });
+  });
+}
+
+/* ---------- ADMIN SUMMARY ---------- */
+function computeStoreStats(s, all, wNum){
+  const salesMap = all[s.code] || {};
+  const entries = normalizedEntries(salesMap).filter(([iso])=> iso.startsWith(`${TARGET_YEAR}-${pad(TARGET_MONTH+1)}`));
+  const totalSold = entries.reduce((a,[,e])=>a+dayTotal(e),0);
+  const pctMonth = s.target>0 ? (totalSold/s.target*100) : 0;
+  const daysWorked = entries.length;
+  const dailyAvg = daysWorked>0 ? totalSold/daysWorked : 0;
+  const daysRemaining = Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked);
+  const projectedPct = s.target>0 ? ((totalSold + dailyAvg*daysRemaining)/s.target*100) : 0;
+
+  const weekTarget = Math.max(0, s.w ? s.w[wNum-1] : (s.target/WEEKS.length));
+  let weekSold = 0;
+  entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===wNum) weekSold += dayTotal(e); });
+  const pctWeek = weekTarget>0 ? (weekSold/weekTarget*100) : 0;
+
+  const soldByCatMonth = {SP:0,Tab:0,WR:0,AUD:0};
+  entries.forEach(([,e])=> CAT_ORDER.forEach(c=> soldByCatMonth[c]+=dayCat(e,c)));
+  const soldByCatWeek = {SP:0,Tab:0,WR:0,AUD:0};
+  entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===wNum) CAT_ORDER.forEach(c=> soldByCatWeek[c]+=dayCat(e,c)); });
+  const targetByCatMonth = s.cat_target || {SP:0,Tab:0,WR:0,AUD:0};
+  const targetByCatWeek = {};
+  CAT_ORDER.forEach(c=> targetByCatWeek[c] = Math.max(0, s.cat_w && s.cat_w[c] ? s.cat_w[c][wNum-1] : 0));
+
+  const roles = storeRoles(s);
+
+  return {...s, totalSold, pctMonth, projectedPct, weekTarget, weekSold, pctWeek,
+    soldByCatMonth, soldByCatWeek, targetByCatMonth, targetByCatWeek, roles, salesMap, entries};
+}
+
+function roleTotalForStat(stat, roleKey, mode, wNum){
+  const ents = mode==='week' ? stat.entries.filter(([iso])=>weekOfDate(iso)===wNum) : stat.entries;
+  return ents.reduce((a,[,e])=>{
+    const r = dayRole(e, roleKey);
+    return a + CAT_ORDER.reduce((s,c)=>s+Number(r[c]||0),0);
+  }, 0);
+}
+
+async function renderAdmin(){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="section" style="text-align:center;color:#888;padding-top:60px;">Cargando resumen...</div>`;
+  const all = await loadAllSales();
+  const wNum = currentWeekNum();
+  const scope = window.__adminScope; // null = admin (todas las tiendas) | {supervisor, codes} = vista de supervisor
+  const scopedStores = scope ? STORES.filter(s=>scope.codes.includes(s.code)) : STORES;
+  const stats = scopedStores.map(s=>computeStoreStats(s, all, wNum));
+
+  const channels = ["TODOS", ...new Set(scopedStores.map(s=>s.account||s.channel))];
+  const byChannel = adminFilter==="TODOS" ? stats : stats.filter(r=>(r.account||r.channel)===adminFilter);
+  const chipsHtml = channels.map(c=>`<span class="filter-chip ${c===adminFilter?'active':''}" data-ch="${c}">${c}</span>`).join('');
+
+  const tabsHtml = `
+    <div class="cat-toggle" id="adminTabBar">
+      <span class="filter-chip ${adminTab==='cumplimiento'?'active':''}" data-tab="cumplimiento">Cumplimiento</span>
+      <span class="filter-chip ${adminTab==='categoria'?'active':''}" data-tab="categoria">Por categoría</span>
+      <span class="filter-chip ${adminTab==='carga'?'active':''}" data-tab="carga">Carga de hoy</span>
+      <span class="filter-chip ${adminTab==='reporte'?'active':''}" data-tab="reporte">Reporte</span>
+    </div>`;
+
+  let bodyHtml = '';
+  if(adminTab==='cumplimiento') bodyHtml = renderTabCumplimiento(byChannel, wNum, chipsHtml);
+  else if(adminTab==='categoria') bodyHtml = renderTabCategoria(byChannel);
+  else if(adminTab==='carga') bodyHtml = renderTabCarga(byChannel, chipsHtml);
+  else if(adminTab==='reporte') bodyHtml = renderTabReporte(byChannel, chipsHtml);
+
+  app.innerHTML = `
+  <div class="topbar">
+    <button class="backbtn" id="backBtn2">‹ Volver</button>
+    <div class="eyebrow">Field Force · ${TARGET_MONTH_LABEL} · Semana ${wNum}</div>
+    <h1>${scope ? 'Equipo de ' + escapeHtml(scope.supervisor) : 'Resumen general'}</h1>
+  </div>
+  <div class="section" style="padding-top:18px;padding-bottom:0;">${tabsHtml}</div>
+  ${bodyHtml}
+  <div class="section" style="padding-top:0;">
+    <div class="footer-note"><span class="linkbtn" id="logoutLink">Cerrar sesión</span></div>
+  </div>
+  `;
+  document.getElementById('backBtn2').addEventListener('click', ()=>{ window.__showAdmin=false; render(); });
+  document.getElementById('logoutLink').addEventListener('click', ()=>{
+    window.__showAdmin=false; window.__adminScope=null; authStage=null; authError='';
+    render();
+  });
+  document.querySelectorAll('#adminTabBar .filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ adminTab = chip.dataset.tab; renderAdmin(); });
+  });
+  document.querySelectorAll('.adminChannelChips .filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ adminFilter = chip.dataset.ch; renderAdmin(); });
+  });
+  document.querySelectorAll('.admin-row-click').forEach(row=>{
+    row.addEventListener('click', ()=> openStoreDetail(row.dataset.code));
+  });
+  if(adminTab==='cumplimiento'){
+    document.querySelectorAll('#modeToggle .filter-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{ adminViewMode = chip.dataset.mode; renderAdmin(); });
+    });
+  }
+  if(adminTab==='categoria'){
+    document.querySelectorAll('#modeToggle .filter-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{ adminViewMode = chip.dataset.mode; renderAdmin(); });
+    });
+  }
+  if(adminTab==='reporte'){
+    document.querySelectorAll('#modeToggle .filter-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{ adminViewMode = chip.dataset.mode; renderAdmin(); });
+    });
+    const dlBtn = document.getElementById('downloadCsvBtn');
+    if(dlBtn) dlBtn.addEventListener('click', ()=> downloadReportCsv(byChannel, adminViewMode, wNum));
+  }
+  if(adminTab==='carga'){
+    const dateInp = document.getElementById('loadDateInput');
+    if(dateInp) dateInp.addEventListener('change', (e)=>{ adminLoadDate = e.target.value; renderAdmin(); });
+  }
+}
+
+/* ---------- TAB: Cumplimiento ---------- */
+function renderTabCumplimiento(byChannel, wNum, chipsHtml){
+  const isWeek = adminViewMode==='week';
+  const pctKey = isWeek ? 'pctWeek' : 'pctMonth';
+  const soldKey = isWeek ? 'weekSold' : 'totalSold';
+  const targetKey = isWeek ? 'weekTarget' : 'target';
+  const filtered = [...byChannel].sort((a,b)=> a[pctKey]-b[pctKey]);
+
+  const totalTarget = filtered.reduce((a,r)=>a+r[targetKey],0);
+  const totalSoldAll = filtered.reduce((a,r)=>a+r[soldKey],0);
+  const overallPct = totalTarget>0 ? Math.round(totalSoldAll/totalTarget*100) : 0;
+  const cumpliendo = filtered.filter(r=>r[pctKey]>=100).length;
+  const noCumpliendo = filtered.length - cumpliendo;
+
+  const rowsHtml = filtered.map(r=>{
+    const pct = r[pctKey];
+    const color = pct>=100 ? 'var(--green)' : (isWeek ? (pct>=85?'var(--ink)':'var(--red)') : (r.projectedPct>=85?'var(--ink)':'var(--red)'));
+    let roleLine = '';
+    if(r.roles.length>1){
+      const parts = r.roles.map(role=>`${role.label.replace('Promotor ','P')}: ${fmt(roleTotalForStat(r, role.key, adminViewMode, currentWeekNum()))}`);
+      roleLine = `<div class="s" style="margin-top:2px;">${parts.join(' · ')}</div>`;
+    }
+    const sold = isWeek ? r.soldByCatWeek : r.soldByCatMonth;
+    const tgt = isWeek ? r.targetByCatWeek : r.targetByCatMonth;
+    const catLine = CAT_ORDER.map(c=>{
+      const t = Math.max(0, tgt[c]||0);
+      const p = t>0 ? Math.round(sold[c]/t*100) : (sold[c]>0?100:0);
+      return `${CAT_LABEL[c]} <b style="color:${p>=100?'var(--green)':'var(--ink)'}">${p}%</b>`;
+    }).join(' · ');
+    return `<div class="admin-row admin-row-click" style="align-items:flex-start;" data-code="${r.code}">
+      <div class="an"><div class="n">${escapeHtml(r.store)}</div><div class="s">${r.code} · ${escapeHtml(r.supervisor||'')} · ${fmt(r[soldKey])}/${fmt(r[targetKey])}</div><div class="cat-mini">${catLine}</div>${roleLine}</div>
+      <div class="ap" style="color:${color}">${Math.round(pct)}% <span class="chev">›</span></div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="section" style="padding-top:10px;padding-bottom:0;">
+    <div class="cat-toggle" id="modeToggle">
+      <span class="filter-chip ${adminViewMode==='month'?'active':''}" data-mode="month">General (mes)</span>
+      <span class="filter-chip ${adminViewMode==='week'?'active':''}" data-mode="week">Semana ${wNum}</span>
+    </div>
+  </div>
+  <div class="admin-summary-band">
+    <div class="stat" style="flex:1"><div class="v">${fmt(totalSoldAll)}</div><div class="l">Vendido</div></div>
+    <div class="stat" style="flex:1"><div class="v">${fmt(totalTarget)}</div><div class="l">Target</div></div>
+    <div class="stat" style="flex:1"><div class="v">${overallPct}%</div><div class="l">Cumplimiento</div></div>
+  </div>
+  <div class="admin-summary-band" style="padding-top:0;">
+    <div class="stat" style="flex:1;background:var(--green-bg);"><div class="v" style="color:var(--green)">${cumpliendo}</div><div class="l">Puntos cumpliendo</div></div>
+    <div class="stat" style="flex:1;background:var(--red-bg);"><div class="v" style="color:var(--red)">${noCumpliendo}</div><div class="l">Puntos sin cumplir</div></div>
+  </div>
+  <div class="section" style="padding-top:6px;">
+    <div class="adminChannelChips" style="margin-bottom:6px;">${chipsHtml}</div>
+    <div class="card" style="padding:8px 14px;">
+      ${rowsHtml || '<div class="empty-msg">Sin datos para este filtro.</div>'}
+    </div>
+    <div class="footer-note">Ordenado de menor a mayor cumplimiento, para priorizar seguimiento.</div>
+  </div>`;
+}
+
+/* ---------- TAB: Por categoría (agrupado por supervisor) ---------- */
+function renderTabCategoria(byChannel){
+  const wNum = currentWeekNum();
+  const bySup = {};
+  byChannel.forEach(s=>{
+    const key = s.supervisor || 'Sin supervisor';
+    if(!bySup[key]) bySup[key] = {sold:{SP:0,Tab:0,WR:0,AUD:0}, tgt:{SP:0,Tab:0,WR:0,AUD:0}};
+    const sold = adminViewMode==='week' ? s.soldByCatWeek : s.soldByCatMonth;
+    const tgt = adminViewMode==='week' ? s.targetByCatWeek : s.targetByCatMonth;
+    CAT_ORDER.forEach(c=>{ bySup[key].sold[c]+=sold[c]; bySup[key].tgt[c]+=tgt[c]; });
+  });
+  const groupsHtml = Object.keys(bySup).sort((a,b)=>a.localeCompare(b,'es')).map(name=>{
+    const g = bySup[name];
+    const totalSold = CAT_ORDER.reduce((a,c)=>a+g.sold[c],0);
+    const totalTgt = CAT_ORDER.reduce((a,c)=>a+g.tgt[c],0);
+    const pct = totalTgt>0 ? Math.round(totalSold/totalTgt*100) : 0;
+    return `<div class="card">
+      <div class="label-eyebrow" style="display:flex;justify-content:space-between;">
+        <span>${escapeHtml(name)}</span><span style="color:${pct>=100?'var(--green)':'var(--ink-soft)'};font-weight:700;">${pct}%</span>
+      </div>
+      ${catRowsHtml(g.sold, g.tgt)}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="section" style="padding-top:10px;padding-bottom:0;">
+    <div class="cat-toggle" id="modeToggle">
+      <span class="filter-chip ${adminViewMode==='month'?'active':''}" data-mode="month">General (mes)</span>
+      <span class="filter-chip ${adminViewMode==='week'?'active':''}" data-mode="week">Semana ${wNum}</span>
+    </div>
+  </div>
+  <div class="section" style="padding-top:6px;">
+    ${groupsHtml || '<div class="empty-msg">Sin datos para este filtro.</div>'}
+  </div>`;
+}
+
+/* ---------- TAB: Carga de hoy (quién reportó y quién no) ---------- */
+function renderTabCarga(byChannel, chipsHtml){
+  if(!adminLoadDate) adminLoadDate = todayISO();
+  const dateIso = adminLoadDate;
+
+  const rows = byChannel.map(s=>{
+    const norm = normalizedEntries(s.salesMap);
+    const found = norm.find(([iso])=>iso===dateIso);
+    const dayEntry = found ? found[1] : null;
+    const loadedRoles = dayEntry ? dayPromoterEntries(dayEntry).filter(([,cats])=> CAT_ORDER.some(c=>Number(cats[c])>0)).map(([k])=>k) : [];
+    return { ...s, loadedCount: loadedRoles.length, totalRoles: s.roles.length, loadedRoleKeys: loadedRoles };
+  }).sort((a,b)=>{
+    const aFull = a.loadedCount>=a.totalRoles ? 1 : 0;
+    const bFull = b.loadedCount>=b.totalRoles ? 1 : 0;
+    return aFull-bFull;
+  });
+
+  const full = rows.filter(r=>r.loadedCount>=r.totalRoles).length;
+  const none = rows.filter(r=>r.loadedCount===0).length;
+  const partial = rows.length - full - none;
+
+  const rowsHtml = rows.map(r=>{
+    let badge, color;
+    if(r.loadedCount>=r.totalRoles){ badge = 'Cargó'; color='var(--green)'; }
+    else if(r.loadedCount===0){ badge = 'No ha cargado'; color='var(--red)'; }
+    else { badge = `${r.loadedCount}/${r.totalRoles} promotores`; color='var(--amber)'; }
+    let missingLine = '';
+    if(r.roles.length>1 && r.loadedCount<r.totalRoles){
+      const missing = r.roles.filter(role=>!r.loadedRoleKeys.includes(role.key)).map(role=>role.label);
+      missingLine = `<div class="s" style="margin-top:2px;color:var(--red);">Falta: ${missing.join(', ')}</div>`;
+    }
+    return `<div class="admin-row" style="align-items:flex-start;">
+      <div class="an"><div class="n">${escapeHtml(r.store)}</div><div class="s">${r.code} · ${escapeHtml(r.supervisor||'')}</div>${missingLine}</div>
+      <div class="ap" style="color:${color};font-size:12px;">${badge}</div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="section" style="padding-top:10px;padding-bottom:0;">
+    <label class="fieldlabel">Ver carga del día</label>
+    <input type="date" id="loadDateInput" value="${dateIso}" min="${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-01" max="${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-${pad(DAYS_IN_MONTH)}"/>
+  </div>
+  <div class="admin-summary-band">
+    <div class="stat" style="flex:1;background:var(--green-bg);"><div class="v" style="color:var(--green)">${full}</div><div class="l">Cargaron completo</div></div>
+    <div class="stat" style="flex:1;background:var(--amber-bg);"><div class="v" style="color:var(--amber)">${partial}</div><div class="l">Carga parcial</div></div>
+    <div class="stat" style="flex:1;background:var(--red-bg);"><div class="v" style="color:var(--red)">${none}</div><div class="l">Sin cargar</div></div>
+  </div>
+  <div class="section" style="padding-top:6px;">
+    <div class="adminChannelChips" style="margin-bottom:6px;">${chipsHtml}</div>
+    <div class="card" style="padding:8px 14px;">
+      ${rowsHtml || '<div class="empty-msg">Sin tiendas para este filtro.</div>'}
+    </div>
+  </div>`;
+}
+
+/* ---------- TAB: Reporte general (tabla + descarga CSV) ---------- */
+function renderTabReporte(byChannel, chipsHtml){
+  const wNum = currentWeekNum();
+  const rowsHtml = byChannel.map(r=>{
+    const sold = adminViewMode==='week' ? r.soldByCatWeek : r.soldByCatMonth;
+    const tgt = adminViewMode==='week' ? r.targetByCatWeek : r.targetByCatMonth;
+    const totalSold = adminViewMode==='week' ? r.weekSold : r.totalSold;
+    const totalTgt = adminViewMode==='week' ? r.weekTarget : r.target;
+    const pct = totalTgt>0 ? Math.round(totalSold/totalTgt*100) : 0;
+    return `<tr>
+      <td style="text-align:left;">${escapeHtml(r.store)}<div style="font-size:10px;color:var(--ink-soft);">${escapeHtml(r.supervisor||'')}</div></td>
+      <td>${fmt(sold.SP)}/${fmt(tgt.SP)}</td>
+      <td>${fmt(sold.Tab)}/${fmt(tgt.Tab)}</td>
+      <td>${fmt(sold.WR)}/${fmt(tgt.WR)}</td>
+      <td>${fmt(sold.AUD)}/${fmt(tgt.AUD)}</td>
+      <td style="font-weight:700;color:${pct>=100?'var(--green)':'var(--ink)'};">${pct}%</td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div class="section" style="padding-top:10px;padding-bottom:0;">
+    <div class="cat-toggle" id="modeToggle">
+      <span class="filter-chip ${adminViewMode==='month'?'active':''}" data-mode="month">General (mes)</span>
+      <span class="filter-chip ${adminViewMode==='week'?'active':''}" data-mode="week">Semana ${wNum}</span>
+    </div>
+  </div>
+  <div class="section" style="padding-top:6px;">
+    <div class="adminChannelChips" style="margin-bottom:6px;">${chipsHtml}</div>
+    <button class="primary" id="downloadCsvBtn" style="margin-bottom:12px;">Descargar reporte CSV</button>
+    <div class="card" style="padding:10px;overflow-x:auto;">
+      <table style="border-collapse:collapse;width:100%;font-size:11.5px;white-space:nowrap;">
+        <thead><tr style="color:var(--ink-soft);text-align:right;">
+          <th style="text-align:left;padding:4px 6px;">Tienda</th>
+          <th style="padding:4px 6px;">Smartphones</th><th style="padding:4px 6px;">Tablets</th>
+          <th style="padding:4px 6px;">Wearables</th><th style="padding:4px 6px;">Audio</th>
+          <th style="padding:4px 6px;">%</th>
+        </tr></thead>
+        <tbody style="text-align:right;">${rowsHtml}</tbody>
+      </table>
+    </div>
+    <div class="footer-note">El CSV incluye además el desglose por promotor en las tiendas con más de uno.</div>
+  </div>`;
+}
+
+function downloadReportCsv(byChannel, mode, wNum){
+  const header = ['Tienda','Codigo','Supervisor','Canal','SP vendido','SP target','Tab vendido','Tab target','WR vendido','WR target','AUD vendido','AUD target','Total vendido','Total target','% cumplimiento'];
+  const rows = [header];
+  byChannel.forEach(r=>{
+    const sold = mode==='week' ? r.soldByCatWeek : r.soldByCatMonth;
+    const tgt = mode==='week' ? r.targetByCatWeek : r.targetByCatMonth;
+    const totalSold = mode==='week' ? r.weekSold : r.totalSold;
+    const totalTgt = mode==='week' ? r.weekTarget : r.target;
+    const pct = totalTgt>0 ? Math.round(totalSold/totalTgt*100) : 0;
+    rows.push([r.store, r.code, r.supervisor||'', r.account||r.channel||'',
+      sold.SP, tgt.SP, sold.Tab, tgt.Tab, sold.WR, tgt.WR, sold.AUD, tgt.AUD, totalSold, totalTgt, pct+'%']);
+    if(r.roles.length>1){
+      r.roles.forEach(role=>{
+        const roleTotal = roleTotalForStat(r, role.key, mode, wNum);
+        rows.push(['   ↳ '+role.label, '', '', '', '', '', '', '', '', '', '', '', roleTotal, '', '']);
+      });
+    }
+  });
+  const csv = rows.map(row=>row.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `reporte_cumplimiento_${mode}_${todayISO()}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- Vista de detalle de tienda (solo lectura, desde supervisión) ---------- */
+let storeDetailViewMode = 'month'; // 'month' | 'week'
+
+async function renderStoreDetail(code){
+  const app = document.getElementById('app');
+  app.innerHTML = `<div class="section" style="text-align:center;color:#888;padding-top:60px;">Cargando detalle...</div>`;
+  const store = STORES.find(s=>s.code===code);
+  if(!store){ window.__storeDetailCode=null; renderAdmin(); return; }
+  const all = await loadAllSales();
+  const wNum = currentWeekNum();
+  const stat = computeStoreStats(store, all, wNum);
+
+  const isWeek = storeDetailViewMode==='week';
+  const pctMonth = stat.pctMonth, pctWeek = stat.pctWeek;
+
+  // avance por semana (todas las semanas)
+  const now = new Date();
+  const isCurrentMonth = now.getFullYear()===TARGET_YEAR && now.getMonth()===TARGET_MONTH;
+  let weekHtml = '';
+  WEEKS.forEach(w=>{
+    const wt = Math.max(0, store.w ? store.w[w.num-1] : (store.target/WEEKS.length));
+    let wSold = 0;
+    stat.entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===w.num) wSold += dayTotal(e); });
+    const wPct = wt>0 ? (wSold/wt*100) : 0;
+    const isPast = isCurrentMonth ? (w.end < now && w.num !== wNum) : true;
+    const isCurrent = isCurrentMonth && w.num===wNum;
+    let badge;
+    if(isCurrent) badge = `<span class="badge pill-amber">En curso</span>`;
+    else if(isPast) badge = wPct>=100 ? `<span class="badge pill-green">Cumplió</span>` : `<span class="badge pill-red">No cumplió</span>`;
+    else badge = `<span class="badge" style="background:var(--surface);color:var(--ink-soft);">Próxima</span>`;
+    weekHtml += `<div class="week-card ${isCurrent?'current':''}">
+      <div><div class="week-name">Semana ${w.num}${badge}</div>
+        <div class="week-range">${w.start.toLocaleDateString('es-CO',{day:'numeric',month:'short'})} – ${w.end.toLocaleDateString('es-CO',{day:'numeric',month:'short'})}</div></div>
+      <div class="week-nums"><b>${fmt(wSold)}</b> / ${fmt(wt)}<br><span style="color:var(--ink-soft)">${Math.round(wPct)}%</span></div>
+    </div>`;
+  });
+
+  // calendario de cargas del mes
+  const loadedSet = new Set(stat.entries.map(([iso])=>iso));
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let missingPastCount = 0;
+  let dayGridHtml = '';
+  for(let d=1; d<=DAYS_IN_MONTH; d++){
+    const iso = `${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-${pad(d)}`;
+    const dateObj = new Date(TARGET_YEAR, TARGET_MONTH, d);
+    const loaded = loadedSet.has(iso);
+    const isFuture = dateObj > today0;
+    let cls = 'day-loaded';
+    if(!loaded){ cls = isFuture ? 'day-future' : 'day-missing'; if(!isFuture) missingPastCount++; }
+    dayGridHtml += `<div class="day-box ${cls}">${d}</div>`;
+  }
+
+  // desglose por rol (si aplica)
+  let roleHtml = '';
+  if(stat.roles.length>1){
+    roleHtml = `<div class="card"><div class="label-eyebrow">Desglose por promotor</div>` +
+      stat.roles.map(role=>{
+        const total = roleTotalForStat(stat, role.key, storeDetailViewMode, wNum);
+        return `<div class="week-card"><div class="week-name">${role.label}</div><div class="week-nums"><b>${fmt(total)}</b> u.</div></div>`;
+      }).join('') + `</div>`;
+  }
+
+  // historial (todas las entradas del mes, más recientes primero)
+  const sortedEntries = [...stat.entries].sort((a,b)=> a[0]<b[0]?1:-1);
+  const histHtml = sortedEntries.slice(0,20).map(([iso,e])=>{
+    const parts = CAT_ORDER.filter(c=>dayCat(e,c)>0).map(c=>`${CAT_LABEL[c]} ${dayCat(e,c)}`).join(' · ');
+    return `<div class="hist-row">
+      <div class="hist-top"><span class="hist-date">${dateLabel(iso)}</span><span class="hist-units">${fmt(dayTotal(e))} u.</span></div>
+      ${parts? `<div class="hist-breakdown">${parts}</div>` : ''}
+    </div>`;
+  }).join('') || `<div class="hist-row" style="color:var(--ink-soft);text-align:center;">Aún no hay registros este mes.</div>`;
+
+  app.innerHTML = `
+  <div class="topbar">
+    <button class="backbtn" id="backToAdmin">‹ Volver al resumen</button>
+    <div class="eyebrow">${store.account || store.channel} · ${store.code} · ${escapeHtml(store.supervisor||'')}</div>
+    <h1>${escapeHtml(store.store)}</h1>
+  </div>
+  <div class="section" style="padding-top:22px;">
+    <div class="card">
+      <div class="gauge-row">
+        <div class="gauge-col">
+          ${ringSvg(pctMonth, 148, 13, pctMonth>=100?'var(--green)':'var(--red)', 26)}
+          <div class="gauge-tag">Mes</div>
+          <div class="gauge-sub">${fmt(stat.totalSold)} / ${fmt(stat.target)} u.</div>
+        </div>
+        <div class="gauge-col">
+          ${ringSvg(pctWeek, 148, 13, pctWeek>=100?'var(--green)':'var(--red)', 26)}
+          <div class="gauge-tag">Semana ${wNum}</div>
+          <div class="gauge-sub">${fmt(stat.weekSold)} / ${fmt(stat.weekTarget)} u.</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="v">${stat.entries.length}</div><div class="l">Días cargados</div></div>
+        <div class="stat"><div class="v" style="color:${missingPastCount>0?'var(--red)':'var(--green)'}">${missingPastCount}</div><div class="l">Días sin cargar</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Calendario de cargas · ${TARGET_MONTH_LABEL}</div>
+      <div class="day-grid">${dayGridHtml}</div>
+      <div class="day-legend">
+        <span><i style="background:var(--green-bg);border:1px solid var(--green);"></i>Cargó</span>
+        <span><i style="background:var(--red-bg);border:1px solid var(--red);"></i>No cargó</span>
+        <span><i style="background:var(--surface);"></i>Aún no llega</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Avance por categoría</div>
+      <div class="cat-toggle" id="detailModeToggle">
+        <span class="filter-chip ${storeDetailViewMode==='month'?'active':''}" data-mode="month">Este mes</span>
+        <span class="filter-chip ${storeDetailViewMode==='week'?'active':''}" data-mode="week">Semana ${wNum}</span>
+      </div>
+      ${catRowsHtml(isWeek?stat.soldByCatWeek:stat.soldByCatMonth, isWeek?stat.targetByCatWeek:stat.targetByCatMonth)}
+    </div>
+
+    ${roleHtml}
+
+    <div class="card">
+      <div class="label-eyebrow">Avance por semana</div>
+      ${weekHtml}
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Historial de cargas</div>
+      ${histHtml}
+    </div>
+  </div>
+  `;
+  document.getElementById('backToAdmin').addEventListener('click', ()=>{ window.__storeDetailCode=null; render(); });
+  document.querySelectorAll('#detailModeToggle .filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ storeDetailViewMode = chip.dataset.mode; renderStoreDetail(code); });
+  });
+}
+
+render();
+
+/* Registro del service worker: habilita instalar la app y que se actualice sola */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

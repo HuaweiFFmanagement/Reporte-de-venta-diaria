@@ -1,0 +1,160 @@
+/*
+  BACKEND — Google Apps Script para el Seguimiento de Cumplimiento (v3)
+  ==================================================================
+  Qué cambió respecto a v2: se agrega una columna "Promoter" (rol del
+  promotor: P1, P2, P3... o TAB para el especialista de tablets) para
+  soportar tiendas con más de un promotor. Cada fila representa la
+  venta de UN rol en UNA tienda en UNA fecha.
+
+  La respuesta de ?action=getAll ahora viene anidada así:
+    { "SCOL...": { "2026-08-04": { "P1": {SP,Tab,WR,AUD}, "P2": {...} } } }
+
+  MIGRACIÓN AUTOMÁTICA: la primera vez que este script corre sobre tu Sheet
+  ya existente (que no tiene columna "Promoter"), la agrega solo, corriendo
+  las columnas de datos una posición a la derecha y llenando "P1" en todas
+  las filas que ya tenías guardadas. No pierdes ningún dato.
+
+  CÓMO ACTUALIZAR TU SCRIPT YA DESPLEGADO:
+  1. Abre tu Google Sheet -> Extensiones -> Apps Script.
+  2. Selecciona TODO el contenido del editor (Ctrl+A) y bórralo.
+  3. Pega TODO este archivo nuevo.
+  4. Guarda (icono de disquete).
+  5. Implementar -> Administrar implementaciones -> lápiz (editar) de tu
+     implementación activa -> en "Versión" elige "Nueva versión" -> Implementar.
+     (Edita la implementación existente para que la URL /exec no cambie.)
+  6. No necesitas tocar el HTML — la URL sigue siendo la misma.
+*/
+
+const SHEET_NAME = 'Ventas';
+const HEADERS = ['StoreCode', 'Date', 'Promoter', 'SP', 'Tab', 'WR', 'AUD', 'UltimaActualizacion'];
+
+function doGet(e) {
+  const action = e.parameter.action;
+  const callback = e.parameter.callback;
+  let result;
+
+  if (action === 'getAll') {
+    result = getAllSalesAsJson();
+  } else if (action === 'save') {
+    const storeCode = e.parameter.storeCode;
+    const date = e.parameter.date;
+    const promoter = e.parameter.promoter || 'P1';
+    if (!storeCode || !date) {
+      result = { ok: false, error: 'faltan storeCode o date' };
+    } else {
+      upsertRow(storeCode, date, promoter, {
+        SP: Number(e.parameter.SP) || 0,
+        Tab: Number(e.parameter.Tab) || 0,
+        WR: Number(e.parameter.WR) || 0,
+        AUD: Number(e.parameter.AUD) || 0
+      });
+      result = { ok: true };
+    }
+  } else {
+    result = { error: 'accion no reconocida' };
+  }
+
+  return respond(result, callback);
+}
+
+/* Se deja doPost por compatibilidad, aunque la app ya no lo usa. */
+function doPost(e) {
+  try {
+    const body = JSON.parse(e.postData.contents);
+    const { storeCode, date, promoter } = body;
+    if (!storeCode || !date) return respond({ ok: false, error: 'faltan storeCode o date' });
+    upsertRow(storeCode, date, promoter || 'P1', {
+      SP: Number(body.SP) || 0,
+      Tab: Number(body.Tab) || 0,
+      WR: Number(body.WR) || 0,
+      AUD: Number(body.AUD) || 0
+    });
+    return respond({ ok: true });
+  } catch (err) {
+    return respond({ ok: false, error: String(err) });
+  }
+}
+
+/* ---------------- helpers internos ---------------- */
+
+function getSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.appendRow(HEADERS);
+    sheet.getRange('C2:C').setNumberFormat('@');
+  } else {
+    migrateSheetIfNeeded(sheet);
+  }
+  return sheet;
+}
+
+/* Si el Sheet es de una versión anterior del script (sin columna Promoter),
+   la inserta una sola vez y marca "P1" en todas las filas existentes. */
+function migrateSheetIfNeeded(sheet) {
+  const lastCol = Math.max(sheet.getLastColumn(), 1);
+  const header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  if (header.indexOf('Promoter') !== -1) return; // ya está migrado
+
+  sheet.insertColumnBefore(3); // nueva columna C: todo lo que estaba en C en adelante se corre a D en adelante
+  sheet.getRange(1, 3).setValue('Promoter');
+  sheet.getRange('C2:C').setNumberFormat('@');
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    const values = [];
+    for (let i = 0; i < lastRow - 1; i++) values.push(['P1']);
+    sheet.getRange(2, 3, lastRow - 1, 1).setValues(values);
+  }
+}
+
+function normalizeDateValue(v) {
+  if (v instanceof Date) {
+    return Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return String(v);
+}
+
+function upsertRow(storeCode, date, promoter, cats) {
+  const sheet = getSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    const range = sheet.getRange(2, 1, lastRow - 1, 3).getValues(); // StoreCode, Date, Promoter
+    for (let i = 0; i < range.length; i++) {
+      if (range[i][0] === storeCode && normalizeDateValue(range[i][1]) === date && (range[i][2] || 'P1') === promoter) {
+        const rowNum = i + 2;
+        sheet.getRange(rowNum, 4, 1, 5).setValues([[cats.SP, cats.Tab, cats.WR, cats.AUD, new Date()]]);
+        return;
+      }
+    }
+  }
+  sheet.appendRow([storeCode, date, promoter, cats.SP, cats.Tab, cats.WR, cats.AUD, new Date()]);
+}
+
+function getAllSalesAsJson() {
+  const sheet = getSheet();
+  const lastRow = sheet.getLastRow();
+  const result = {};
+  if (lastRow <= 1) return result;
+  const data = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
+  data.forEach(row => {
+    const storeCode = row[0];
+    if (!storeCode) return;
+    const date = normalizeDateValue(row[1]);
+    const promoter = row[2] || 'P1';
+    if (!result[storeCode]) result[storeCode] = {};
+    if (!result[storeCode][date]) result[storeCode][date] = {};
+    result[storeCode][date][promoter] = { SP: row[3] || 0, Tab: row[4] || 0, WR: row[5] || 0, AUD: row[6] || 0 };
+  });
+  return result;
+}
+
+function respond(obj, callback) {
+  const json = JSON.stringify(obj);
+  if (callback) {
+    return ContentService.createTextOutput(`${callback}(${json})`)
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
