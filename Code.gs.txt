@@ -1,18 +1,19 @@
 /*
-  BACKEND — Google Apps Script para el Seguimiento de Cumplimiento (v3)
+  BACKEND — Google Apps Script para el Seguimiento de Cumplimiento (v5)
   ==================================================================
-  Qué cambió respecto a v2: se agrega una columna "Promoter" (rol del
-  promotor: P1, P2, P3... o TAB para el especialista de tablets) para
-  soportar tiendas con más de un promotor. Cada fila representa la
-  venta de UN rol en UNA tienda en UNA fecha.
+  Qué se agregó respecto a v4: la celda B2 de la pestaña "Config" ahora
+  permite poner también una IMAGEN en el comunicado (además del texto de
+  B1). Pega ahí la URL directa de una imagen pública (por ejemplo, subida
+  a Google Drive con acceso "cualquiera con el link" y usando un link
+  directo de imagen, o subida a un servicio como imgur.com). Si dejas B2
+  vacío, el comunicado se ve exactamente igual que antes (solo texto).
 
-  La respuesta de ?action=getAll ahora viene anidada así:
-    { "SCOL...": { "2026-08-04": { "P1": {SP,Tab,WR,AUD}, "P2": {...} } } }
-
-  MIGRACIÓN AUTOMÁTICA: la primera vez que este script corre sobre tu Sheet
-  ya existente (que no tiene columna "Promoter"), la agrega solo, corriendo
-  las columnas de datos una posición a la derecha y llenando "P1" en todas
-  las filas que ya tenías guardadas. No pierdes ningún dato.
+  CÓMO SE EDITA EL COMUNICADO (esto es lo único que se toca en el día a día):
+  1. Abre tu Google Sheet.
+  2. Ve a la pestaña "Config".
+  3. B1 = el texto del comunicado. B2 = URL de una imagen (opcional).
+  4. Listo — se refleja en la app la próxima vez que alguien la abra
+     (no hace falta redeploy ni tocar nada más).
 
   CÓMO ACTUALIZAR TU SCRIPT YA DESPLEGADO:
   1. Abre tu Google Sheet -> Extensiones -> Apps Script.
@@ -27,6 +28,7 @@
 
 const SHEET_NAME = 'Ventas';
 const HEADERS = ['StoreCode', 'Date', 'Promoter', 'SP', 'Tab', 'WR', 'AUD', 'UltimaActualizacion'];
+const CONFIG_SHEET_NAME = 'Config';
 
 function doGet(e) {
   const action = e.parameter.action;
@@ -35,6 +37,8 @@ function doGet(e) {
 
   if (action === 'getAll') {
     result = getAllSalesAsJson();
+  } else if (action === 'getAnnouncement') {
+    result = getAnnouncementData();
   } else if (action === 'save') {
     const storeCode = e.parameter.storeCode;
     const date = e.parameter.date;
@@ -75,6 +79,23 @@ function doPost(e) {
   }
 }
 
+/* ---------------- comunicado editable ---------------- */
+function getAnnouncementData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(CONFIG_SHEET_NAME);
+    sheet.getRange('A1').setValue('Comunicado (edita la celda B1 — se refleja en la app al instante):');
+    sheet.getRange('B1').setValue('¡Bienvenidos! A partir de hoy reportamos la venta diaria por acá.');
+    sheet.getRange('A2').setValue('Imagen del comunicado (opcional): pega aquí la URL de una imagen publica (B2):');
+    sheet.setColumnWidth(1, 420);
+    sheet.setColumnWidth(2, 420);
+  }
+  const text = sheet.getRange('B1').getValue();
+  const imageUrl = sheet.getRange('B2').getValue();
+  return { text: text ? String(text) : '', imageUrl: imageUrl ? String(imageUrl) : '' };
+}
+
 /* ---------------- helpers internos ---------------- */
 
 function getSheet() {
@@ -90,14 +111,12 @@ function getSheet() {
   return sheet;
 }
 
-/* Si el Sheet es de una versión anterior del script (sin columna Promoter),
-   la inserta una sola vez y marca "P1" en todas las filas existentes. */
 function migrateSheetIfNeeded(sheet) {
   const lastCol = Math.max(sheet.getLastColumn(), 1);
   const header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
-  if (header.indexOf('Promoter') !== -1) return; // ya está migrado
+  if (header.indexOf('Promoter') !== -1) return;
 
-  sheet.insertColumnBefore(3); // nueva columna C: todo lo que estaba en C en adelante se corre a D en adelante
+  sheet.insertColumnBefore(3);
   sheet.getRange(1, 3).setValue('Promoter');
   sheet.getRange('C2:C').setNumberFormat('@');
 
@@ -120,7 +139,7 @@ function upsertRow(storeCode, date, promoter, cats) {
   const sheet = getSheet();
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) {
-    const range = sheet.getRange(2, 1, lastRow - 1, 3).getValues(); // StoreCode, Date, Promoter
+    const range = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
     for (let i = 0; i < range.length; i++) {
       if (range[i][0] === storeCode && normalizeDateValue(range[i][1]) === date && (range[i][2] || 'P1') === promoter) {
         const rowNum = i + 2;

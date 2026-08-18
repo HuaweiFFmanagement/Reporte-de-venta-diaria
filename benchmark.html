@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huawei — Competitive Intelligence</title>
+<style>
+:root{--hw:#CF0A2C;--dark:#0F1923;--ink:#0F1923;--soft:#64748B;--rule:#E2E8F0;--bg:#F1F5F9;--w:#FFF;
+--g-bg:#D1FAE5;--g-tx:#065F46;--y-bg:#FEF3C7;--y-tx:#92400E;--r-bg:#FEE2E2;--r-tx:#991B1B;
+--o-bg:#FFEDD5;--o-tx:#9A3412;--b-bg:#DBEAFE;--b-tx:#1E40AF;--cmr:#00833E;--pp:#6D28D9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:13px}
+.top{background:var(--dark);padding:0 22px;height:54px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;border-bottom:2px solid var(--hw)}
+.logo{background:var(--hw);color:#fff;font-weight:800;font-size:10px;letter-spacing:2.5px;padding:4px 10px;border-radius:3px}
+.tt{color:#fff;font-size:13px;font-weight:600}.ts{color:rgba(255,255,255,.4);font-size:11px;margin-left:auto}
+.tsx{color:rgba(255,255,255,.5);font-size:11px;white-space:nowrap}
+.btn{background:var(--hw);color:#fff;border:none;padding:8px 15px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:opacity .2s;white-space:nowrap}
+.btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.j{background:var(--pp)}.btn.sec{background:rgba(255,255,255,.12);font-size:11px;padding:6px 11px}
+.spin{display:none;width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.btn.loading .spin{display:block}@keyframes spin{to{transform:rotate(360deg)}}
+.pw{height:3px;position:sticky;top:54px;z-index:199}.pg{height:100%;width:0;background:var(--hw);transition:width .3s}
+.log{display:none;background:#080F1A;color:#64748B;padding:8px 22px;font-family:'Courier New',monospace;font-size:10.5px;line-height:1.9;border-bottom:1px solid #1E293B;max-height:120px;overflow-y:auto}
+.log.on{display:block}.ok{color:#4ADE80}.er{color:#F87171}.in{color:#60A5FA}.wn{color:#FBBF24}
+.main{padding:20px 22px 60px;max-width:1660px}
+.note{display:none;background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:11px 15px;margin-bottom:16px;font-size:12px;color:#92400E;gap:9px;align-items:flex-start}
+.note.show{display:flex}.note strong{display:block;margin-bottom:3px}
+.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tab{padding:7px 15px;border-radius:20px;border:1.5px solid var(--rule);background:var(--w);cursor:pointer;font-size:11.5px;font-weight:600;color:var(--soft);transition:all .15s;line-height:1.3;text-align:center}
+.tab:hover{border-color:var(--hw);color:var(--hw)}.tab.active{background:var(--hw);color:#fff;border-color:var(--hw)}
+.sec{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--soft);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.leg{font-size:9px;font-weight:600;color:var(--soft);text-transform:none;letter-spacing:0}.leg b{color:var(--cmr)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.cards{grid-template-columns:1fr}}
+.card{background:var(--w);border-radius:10px;border:1px solid var(--rule);overflow:hidden}
+.chd{padding:11px 14px 9px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--rule)}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}.cn{font-weight:700;font-size:13px}
+.cst{margin-left:auto;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:10px}.s-ok{background:var(--g-bg);color:var(--g-tx)}.s-nd{background:var(--y-bg);color:var(--y-tx)}
+.cb{padding:12px 14px}.met{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.ml{font-size:10px;color:var(--soft)}.mv{font-size:15px;font-weight:800}.mhw{color:var(--hw)}
+.bw{height:5px;border-radius:3px;background:var(--rule);margin-top:4px;overflow:hidden}.bf{height:100%;border-radius:3px;transition:width .6s}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:9.5px;font-weight:700}
+.bg-g{background:var(--g-bg);color:var(--g-tx)}.bg-y{background:var(--y-bg);color:var(--y-tx)}.bg-r{background:var(--r-bg);color:var(--r-tx)}.bg-o{background:var(--o-bg);color:var(--o-tx)}.bg-b{background:var(--b-bg);color:var(--b-tx)}
+.tbox{margin-top:8px;font-size:10px;color:var(--r-tx);background:var(--r-bg);padding:5px 9px;border-radius:5px}
+.cardtag{margin-top:8px;font-size:9.5px;color:var(--soft);background:#F8FAFC;border:1px solid var(--rule);padding:6px 9px;border-radius:5px;line-height:1.5}
+.cardtag b{color:var(--ink)}.cardtag .cmrtag{color:var(--cmr);font-weight:700}
+.tw{background:var(--w);border-radius:10px;border:1px solid var(--rule);overflow:hidden;margin-bottom:24px}
+.rt{width:100%;border-collapse:collapse}
+.rt th{background:var(--dark);color:rgba(255,255,255,.6);font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:10px 11px;text-align:left}.rt th.r{text-align:right}
+.rt td{padding:8px 11px;border-bottom:1px solid var(--rule);vertical-align:middle}.rt tr:last-child td{border-bottom:none}
+.rt tr.hw td{background:#FFF5F5}.rt tr:hover:not(.hw) td{background:#F8FAFC}
+.rn{font-size:11px;color:var(--soft);font-weight:600;width:24px}
+.bc{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9.5px;font-weight:700;background:var(--b-bg);color:var(--b-tx)}.bc.hw{background:var(--hw);color:#fff}
+.pn{font-size:12px;max-width:230px}
+.pcell{text-align:right;line-height:1.32}.p-now{font-weight:700;font-size:13px}.p-now.thr{color:var(--r-tx)}.p-now.hw{color:var(--hw)}
+.p-was{font-size:10px;color:#94A3B8;text-decoration:line-through}.p-cmr{font-size:10px;color:var(--cmr);font-weight:700}.p-nd{color:#CBD5E0;font-weight:400;font-size:11px}
+.dc{text-align:right;font-size:11px;font-weight:600}.dc.pos{color:var(--g-tx)}.dc.neg{color:var(--r-tx)}
+.tc{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:10px}.tc.yes{background:var(--r-bg);color:var(--r-tx)}.tc.no{background:var(--g-bg);color:var(--g-tx)}.tc.hw{background:#FFF0F0;color:var(--hw)}
+.p2w{background:var(--w);border-radius:10px;border:1px solid var(--rule);overflow-x:auto;margin-bottom:24px}
+.p2{border-collapse:collapse;min-width:100%}.p2 th{padding:10px 12px;font-size:9.5px;font-weight:700;white-space:nowrap;min-width:150px;text-align:center}
+.p2 th.sc{background:var(--dark);color:rgba(255,255,255,.5);text-align:left;min-width:120px;position:sticky;left:0;z-index:2}.p2 th.hwc{background:var(--hw);color:#fff}.p2 th.cc{background:var(--ink);color:rgba(255,255,255,.6)}
+.p2 td{padding:8px 12px;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);font-size:11px;text-align:center}
+.p2 td.sl{background:#F8FAFC;font-weight:600;color:var(--soft);text-align:left;position:sticky;left:0;z-index:1;border-right:2px solid var(--rule)}
+.p2 tr:last-child td{border-bottom:none}.p2 tr.pr td{font-weight:800;font-size:12.5px;background:#F8FAFC;line-height:1.3}
+.p2 tr.pr td.hwv{color:var(--hw);background:#FFF5F5}.p2 tr.pr td.tv{background:var(--r-bg)}.p2 td.hwv{background:rgba(207,10,44,.03)}
+.p2 .sub{font-size:9px;font-weight:600;display:block}.p2 .sub.cmr{color:var(--cmr)}.p2 .sub.was{color:#94A3B8;text-decoration:line-through}
+.p2 td.win{background:#ECFDF5}.p2 td.win::after{content:" ▲";color:#059669;font-size:9px}
+.p2 td.lose{background:#FEF2F2}.p2 td.lose::after{content:" ▼";color:#DC2626;font-size:9px}
+.p2 tr.dr td{font-size:11px;font-weight:700;background:var(--dark)!important;color:rgba(255,255,255,.4)}.p2 tr.dr td.sl{color:rgba(255,255,255,.5)!important}.dp{color:#4ADE80!important}.dn{color:#F87171!important}
+.empty{text-align:center;padding:46px 20px;color:var(--soft)}.empty .ico{font-size:30px;margin-bottom:8px}.empty h3{font-size:14px;font-weight:700;margin-bottom:4px}.empty p{font-size:11px}
+/* VERSUS cards (who wins) */
+.vs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:24px}
+.vscard{background:var(--w);border:1px solid var(--rule);border-radius:10px;padding:13px 15px}
+.vshd{display:flex;align-items:center;gap:8px;margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid var(--rule)}
+.vshd .bc{font-size:10px}.vsprice{margin-left:auto;font-size:12px;font-weight:800}
+.vsrow{display:flex;gap:8px;margin-bottom:7px;font-size:11px;line-height:1.45}
+.vsrow .ico2{flex-shrink:0;width:15px;font-weight:800}
+.vswin .ico2{color:#DC2626}.vshwin .ico2{color:#059669}
+.vslab{color:var(--soft)}.vslab b{color:var(--ink);font-weight:700}
+.vsnone{font-size:11px;color:var(--soft);font-style:italic}
+/* ANALYSIS */
+.analysis{background:var(--w);border:1px solid var(--rule);border-radius:10px;padding:20px 22px;margin-bottom:24px;line-height:1.65}
+.analysis h3{font-size:14px;font-weight:800;margin-bottom:6px;color:var(--ink);display:flex;align-items:center;gap:7px}
+.analysis h4{font-size:12px;font-weight:700;margin:16px 0 7px;color:var(--ink)}
+.analysis p{font-size:12px;color:#334155;margin-bottom:8px}
+.analysis .ahd{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--pp);margin-bottom:12px}
+.athreat{background:#FEF6F6;border-left:3px solid var(--r-tx);border-radius:6px;padding:9px 13px;margin-bottom:8px;font-size:11.5px;line-height:1.55}
+.athreat b{color:var(--r-tx)}
+.awin{background:#F0FDF4;border-left:3px solid var(--g-tx);border-radius:6px;padding:9px 13px;margin-bottom:8px;font-size:11.5px;line-height:1.55}
+.awin b{color:var(--g-tx)}
+.akpi{display:inline-block;background:#F1F5F9;border-radius:5px;padding:2px 8px;font-weight:700;font-size:11px;margin:0 2px}
+.amov{background:#FFF7ED;border-left:3px solid var(--o-tx);border-radius:6px;padding:9px 13px;margin-bottom:8px;font-size:11.5px;line-height:1.55}
+.amov b{color:var(--o-tx)}
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(15,25,35,.6);z-index:500;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.ov.on{display:flex}
+.modal{background:var(--w);border-radius:14px;max-width:840px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+.mh{background:var(--pp);color:#fff;padding:16px 22px;display:flex;align-items:center;gap:10px}
+.mh h2{font-size:15px;font-weight:700;flex:1}.mh .x{cursor:pointer;font-size:20px;opacity:.8}.mh .x:hover{opacity:1}
+.mb{padding:18px 22px;max-height:60vh;overflow-y:auto}
+.jsum{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.jstat{flex:1;min-width:120px;border-radius:10px;padding:12px 14px;text-align:center}
+.jstat .num{font-size:24px;font-weight:800;line-height:1}.jstat .lbl{font-size:10px;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.js-ok{background:var(--g-bg);color:var(--g-tx)}.js-warn{background:var(--y-bg);color:var(--y-tx)}.js-err{background:var(--r-bg);color:var(--r-tx)}
+.anom{border:1px solid var(--rule);border-left:3px solid var(--y-tx);border-radius:8px;padding:11px 14px;margin-bottom:9px}
+.anom.crit{border-left-color:var(--r-tx);background:#FEF6F6}
+.anom .at{font-size:12px;font-weight:700;margin-bottom:3px}.anom .ad{font-size:11px;color:var(--soft);line-height:1.5}
+.anom .cmp{display:inline-block;font-family:'Courier New',monospace;font-size:11px;background:#F1F5F9;padding:1px 6px;border-radius:4px;margin:0 2px}
+.jok{text-align:center;padding:30px;color:var(--g-tx)}.jok .ico{font-size:36px;margin-bottom:8px}
+.jrun{text-align:center;padding:36px;color:var(--soft)}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="index.html" class="btn sec" style="text-decoration:none;">‹ Reporte de ventas</a>
+  <span class="logo">HUAWEI</span><span class="tt">Competitive Intelligence</span>
+  <span class="ts">CBG Colombia · Retail Benchmark</span>
+  <span class="tsx" id="ts">Scrape en vivo · Jun 2026</span>
+  <button class="btn sec" onclick="document.getElementById('logEl').classList.toggle('on')">📋 Log</button>
+  <button class="btn j" id="btnJ" onclick="runJudge()"><span class="spin"></span><span>⚖️ Detectar anomalías</span></button>
+  <button class="btn" id="btnU" onclick="runUpdate()"><span class="spin"></span><span>⟳ Actualizar</span></button>
+</div>
+<div class="pw"><div class="pg" id="pg"></div></div>
+<div class="log" id="logEl"></div>
+<div class="main">
+  <div class="note" id="note"><div style="font-size:17px">⚠️</div><div>
+    <strong>Los botones "Actualizar" y "Detectar" requieren publicación web (no funcionan desde file://)</strong>
+    Chrome bloquea las consultas a las APIs de los retailers desde el disco. Súbelo a GitHub Pages para activarlos. Los datos cargados ya son del scrape en vivo más reciente.
+  </div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="sec">POSICIÓN COMPETITIVA POR RETAILER<span class="leg">🟢 líder · 🟡 competitivo · 🟠 premium · 🔴 caro</span></div>
+  <div class="cards" id="cards"></div>
+  <div class="sec">RANKING DE PRECIOS — <span id="rlabel">–</span>
+    <span class="leg">precio actual · <span style="text-decoration:line-through;color:#94A3B8">lista</span> · <b>CMR Falabella</b></span>
+  </div>
+  <div class="tw" id="ranking"></div>
+  <div class="sec" style="margin-top:4px">PIN TO PIN — Huawei vs. cada competidor <span class="leg">verde = el competidor gana · rojo = Huawei gana</span></div>
+  <div class="p2w" id="p2p"></div>
+  <div class="sec" style="margin-top:4px">¿QUIÉN GANA EN QUÉ? — ventajas por competidor</div>
+  <div class="vs" id="vs"></div>
+  <div class="sec" style="margin-top:4px">ANÁLISIS EJECUTIVO</div>
+  <div class="analysis" id="analysis"></div>
+</div>
+<div class="ov" id="ov"><div class="modal">
+  <div class="mh"><span style="font-size:18px">⚖️</span><h2>Juez de anomalías — Dashboard vs. Sitio web</h2><span class="x" onclick="document.getElementById('ov').classList.remove('on')">✕</span></div>
+  <div class="mb" id="jbody"></div>
+</div></div>
+<script>
+const SEGS={"Nova Y73":{"range":"$750K–$1.1M","products":[{"brand":"HUAWEI","ref":"Nova Y73 256GB 4G 8GB RAM","isHw":1,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"6620mAh","Pantalla":"6.67\"","Chipset":"Huawei Kirin","Cám.T":"50MP","Cám.F":"8MP","NFC":"Sí","IP":"—"},"q":{"must":["nova y73"],"not":[],"cap":"256","fb":"huawei","cq":"huawei nova y73"},"p":{"Alkosto":{"now":849900.0,"was":999900.0,"cmr":null},"Falabella":{"now":849900.0,"was":999900.0,"cmr":null},"Claro":{"now":899900.0,"was":null,"cmr":null}}},{"brand":"HONOR","ref":"X7d 256GB 4G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"6500mAh","Pantalla":"6.7\"","Chipset":"Qualcomm Snapdragon","Cám.T":"108MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["x7d"],"not":[],"cap":"256","fb":"honor","cq":"honor x7d"},"p":{"Alkosto":{"now":849050.0,"was":1094050.0,"cmr":null},"Falabella":{"now":849900.0,"was":1499900.0,"cmr":null},"Claro":{"now":849900.0,"was":null,"cmr":null}}},{"brand":"HONOR","ref":"X8d 512GB 4G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"512GB","Batería":"—","Pantalla":"6.7\"","Chipset":"Qualcomm Snapdragon","Cám.T":"108MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["x8d"],"not":[],"cap":"512","fb":"honor","cq":"honor x8d"},"p":{"Alkosto":{"now":1149050.0,"was":1499900.0,"cmr":null},"Falabella":{"now":1149900.0,"was":1499900.0,"cmr":null},"Claro":{"now":1149900.0,"was":null,"cmr":null}}},{"brand":"OPPO","ref":"A6 256GB 5G 4GB RAM","isHw":0,"specs":{"RAM":"4GB","ROM":"256GB","Batería":"—","Pantalla":"6.65\"","Chipset":"Mediatek Dimensity","Cám.T":"50MP","Cám.F":"8MP","NFC":"Sí","IP":"—"},"q":{"must":["a6"],"not":[],"cap":"256","fb":"oppo","cq":"oppo a6"},"p":{"Alkosto":{"now":1149900.0,"was":1699900.0,"cmr":null},"Falabella":{"now":1599900.0,"was":null,"cmr":null},"Claro":{"now":1149900.0,"was":null,"cmr":null}}},{"brand":"VIVO","ref":"Y39 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.7\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["y39"],"not":[],"cap":"256","fb":"vivo","cq":"vivo y39"},"p":{"Alkosto":{"now":1094050.0,"was":1999050.0,"cmr":null},"Falabella":{"now":1094900.0,"was":1399900.0,"cmr":null},"Claro":{"now":999900.0,"was":1099900.0,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy A17 256GB LTE 4G","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"5000mAh","Pantalla":"6.7\"","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a17"],"not":[],"cap":"256","fb":"samsung","cq":"samsung galaxy a17"},"p":{"Alkosto":{"now":799050.0,"was":999050.0,"cmr":null},"Falabella":"nd","Claro":{"now":799900.0,"was":849900.0,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy A37 128GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a37"],"not":[],"cap":"128","fb":"samsung","cq":"samsung galaxy a37"},"p":{"Alkosto":{"now":1149050.0,"was":1599900.0,"cmr":null},"Falabella":"nd","Claro":{"now":1149900.0,"was":null,"cmr":null}}},{"brand":"MOTOROLA","ref":"G86 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"5200mAh","Pantalla":"6.67\"","Chipset":"MediaTek Dimensity","Cám.T":"50MP","Cám.F":"8MP","NFC":"Sí","IP":"—"},"q":{"must":["g86"],"not":["power"],"cap":"256","fb":"motorola","cq":"motorola g86"},"p":{"Alkosto":{"now":849050.0,"was":1899050.0,"cmr":null},"Falabella":{"now":899900.0,"was":1899900.0,"cmr":869900.0},"Claro":"nd"}},{"brand":"MOTOROLA","ref":"Edge 60 Fusion 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"5200mAh","Pantalla":"6.7\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["edge 60 fusion"],"not":[],"cap":"256","fb":"motorola","cq":"motorola edge 60 fusion"},"p":{"Alkosto":{"now":1099050.0,"was":2299050.0,"cmr":null},"Falabella":{"now":1099900.0,"was":2299900.0,"cmr":1019900.0},"Claro":"nd"}},{"brand":"XIAOMI","ref":"Redmi Note 15 256GB 4G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.77\"","Chipset":"MediaTek Helio","Cám.T":"108MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["redmi note 15"],"not":[],"cap":"256","fb":"xiaomi","cq":"xiaomi redmi note 15"},"p":{"Alkosto":{"now":1111050.0,"was":1599050.0,"cmr":null},"Falabella":{"now":1499900.0,"was":null,"cmr":null},"Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy A26 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.7\"","Chipset":"Samsung Exynos","Cám.T":"50MP","Cám.F":"13MP","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a26"],"not":[],"cap":"256","fb":"samsung","cq":"samsung galaxy a26"},"p":{"Alkosto":"nd","Falabella":{"now":949900.0,"was":1349900.0,"cmr":899900.0},"Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy A16 256GB LTE 4G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a16"],"not":[],"cap":"256","fb":"samsung","cq":"samsung galaxy a16"},"p":{"Alkosto":{"now":979050.0,"was":979050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"XIAOMI","ref":"15C 256GB 5G 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["15c"],"not":[],"cap":"256","fb":"xiaomi","cq":"xiaomi 15c"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":859900.0,"was":null,"cmr":null}}},{"brand":"HONOR","ref":"400 Smart 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["400 smart"],"not":[],"cap":"256","fb":"honor","cq":"honor 400 smart"},"p":{"Alkosto":{"now":899050.0,"was":1399050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"OPPO","ref":"A5M 256GB 4G","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.6\"","Chipset":"Qualcomm Snapdragon","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["a5m"],"not":[],"cap":"256","fb":"oppo","cq":"oppo a5m"},"p":{"Alkosto":{"now":899900.0,"was":1799050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"MOTOROLA","ref":"Moto G56 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.7\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"32MP","NFC":"Sí","IP":"—"},"q":{"must":["moto g56"],"not":[],"cap":"256","fb":"motorola","cq":"motorola moto g56"},"p":{"Alkosto":"nd","Falabella":{"now":799900.0,"was":1599900.0,"cmr":789900.0},"Claro":"nd"}},{"brand":"HONOR","ref":"X6c 256GB 4G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["x6c"],"not":[],"cap":"256","fb":"honor","cq":"honor x6c"},"p":{"Alkosto":{"now":759900.0,"was":1049050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"XIAOMI","ref":"Redmi 15 256GB 4G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["redmi 15"],"not":[],"cap":"256","fb":"xiaomi","cq":"xiaomi redmi 15"},"p":{"Alkosto":{"now":749050.0,"was":1499050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"XIAOMI","ref":"Redmi Note 15 512GB 4G","isHw":0,"specs":{"RAM":"8GB","ROM":"512GB","Batería":"—","Pantalla":"6.77\"","Chipset":"MediaTek Helio","Cám.T":"108MP","Cám.F":"20MP","NFC":"Sí","IP":"—"},"q":{"must":["redmi note 15"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi redmi note 15"},"p":{"Alkosto":{"now":999050.0,"was":1599050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"MOTOROLA","ref":"G86 Power 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["g86 power"],"not":[],"cap":"256","fb":"motorola","cq":"motorola g86 power"},"p":{"Alkosto":{"now":999050.0,"was":1949050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"VIVO","ref":"Y21D 256GB 4G 6GB RAM","isHw":0,"specs":{"RAM":"6GB","ROM":"256GB","Batería":"—","Pantalla":"6.68\"","Chipset":"—","Cám.T":"50MP","Cám.F":"5MP","NFC":"Sí","IP":"—"},"q":{"must":["y21d"],"not":[],"cap":"256","fb":"vivo","cq":"vivo y21d"},"p":{"Alkosto":"nd","Falabella":{"now":899900.0,"was":1349900.0,"cmr":null},"Claro":"nd"}}]},"Nova 13-14":{"range":"$1.7M–$2.5M","products":[{"brand":"HUAWEI","ref":"Nova 14 512GB 4G 12GB RAM","isHw":1,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"5500mAh","Pantalla":"6.7\"","Chipset":"Huawei Kirin","Cám.T":"50MP","Cám.F":"50MP","NFC":"Sí","IP":"—"},"q":{"must":["nova 14"],"not":[],"cap":"512","fb":"huawei","cq":"huawei nova 14"},"p":{"Alkosto":"nd","Falabella":{"now":1899900.0,"was":2999900.0,"cmr":null},"Claro":"nd"}},{"brand":"OPPO","ref":"A6 Pro 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.6\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["a6 pro"],"not":[],"cap":"256","fb":"oppo","cq":"oppo a6 pro"},"p":{"Alkosto":{"now":1999900.0,"was":2599050.0,"cmr":null},"Falabella":{"now":2199900.0,"was":2799900.0,"cmr":null},"Claro":{"now":1999900.0,"was":2199900.0,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy A57 256GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"—","Batería":"—","Pantalla":"6.7\"","Chipset":"—","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a57"],"not":[],"cap":"256","fb":"samsung","cq":"samsung galaxy a57"},"p":{"Alkosto":{"now":2199990.0,"was":2799990.0,"cmr":null},"Falabella":"nd","Claro":{"now":1999950.0,"was":null,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy A37 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a37"],"not":[],"cap":"256","fb":"samsung","cq":"samsung galaxy a37"},"p":{"Alkosto":{"now":1799990.0,"was":2299990.0,"cmr":null},"Falabella":"nd","Claro":{"now":1699950.0,"was":null,"cmr":null}}},{"brand":"OPPO","ref":"A6s 256GB 4G 6GB RAM","isHw":0,"specs":{"RAM":"6GB","ROM":"256GB","Batería":"—","Pantalla":"6.75\"","Chipset":"Qualcomm Snapdragon","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["a6s"],"not":[],"cap":"256","fb":"oppo","cq":"oppo a6s"},"p":{"Alkosto":{"now":1699900.0,"was":2399050.0,"cmr":null},"Falabella":{"now":1699900.0,"was":null,"cmr":1599900.0},"Claro":"nd"}},{"brand":"OPPO","ref":"Reno 14F 512GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"—","Pantalla":"6.5\"","Chipset":"Qualcomm Snapdragon","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["reno 14f"],"not":[],"cap":"512","fb":"oppo","cq":"oppo reno 14f"},"p":{"Alkosto":{"now":2399900.0,"was":3599050.0,"cmr":null},"Falabella":{"now":2599900.0,"was":3599900.0,"cmr":2399900.0},"Claro":"nd"}},{"brand":"VIVO","ref":"V60 Lite 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.77\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"32MP","NFC":"Sí","IP":"—"},"q":{"must":["v60 lite"],"not":[],"cap":"256","fb":"vivo","cq":"vivo v60 lite"},"p":{"Alkosto":{"now":2199050.0,"was":2999050.0,"cmr":null},"Falabella":{"now":2199900.0,"was":2999900.0,"cmr":null},"Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy A57 128GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"—","Batería":"—","Pantalla":"6.7\"","Chipset":"—","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a57"],"not":[],"cap":"128","fb":"samsung","cq":"samsung galaxy a57"},"p":{"Alkosto":"nd","Falabella":{"now":2299900.0,"was":null,"cmr":1549900.0},"Claro":"nd"}},{"brand":"XIAOMI","ref":"Redmi Note 15 Pro 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["redmi note 15 pro"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi redmi note 15 pro"},"p":{"Alkosto":{"now":1899050.0,"was":2799050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"XIAOMI","ref":"REDMINOTE 15PRO512GB 5G 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["redminote 15pro"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi redminote 15pro"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":1839900.0,"was":1898900.0,"cmr":null}}},{"brand":"HONOR","ref":"Magic8 Lite 5G 512gb","isHw":0,"specs":{"RAM":"8GB","ROM":"512GB","Batería":"—","Pantalla":"6.7\"","Chipset":"Qualcomm Snapdragon","Cám.T":"108MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["magic8 lite"],"not":[],"cap":"512","fb":"honor","cq":"honor magic8 lite"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":1999900.0,"was":2299900.0,"cmr":null}}},{"brand":"MOTOROLA","ref":"60 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["60"],"not":[],"cap":"512","fb":"motorola","cq":"motorola 60"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":1799900.0,"was":1899900.0,"cmr":null}}},{"brand":"OPPO","ref":"Reno 14F 256GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.5\"","Chipset":"Qualcomm Snapdragon","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["reno 14f"],"not":[],"cap":"256","fb":"oppo","cq":"oppo reno 14f"},"p":{"Alkosto":"nd","Falabella":{"now":2299900.0,"was":3099900.0,"cmr":2199900.0},"Claro":"nd"}},{"brand":"INFINIX","ref":"Note 60 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["note 60"],"not":[],"cap":"256","fb":"infinix","cq":"infinix note 60"},"p":{"Alkosto":{"now":1649900.0,"was":3499900.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"TECNO","ref":"POVA 7 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["pova 7"],"not":[],"cap":"256","fb":"tecno","cq":"tecno pova 7"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":1799900.0,"was":null,"cmr":null}}},{"brand":"TECNO","ref":"CAMON40 PREMIER 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["camon40 premier"],"not":[],"cap":"256","fb":"tecno","cq":"tecno camon40 premier"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":2299900.0,"was":null,"cmr":null}}}]},"Nova 14 Pro":{"range":"$2.1M–$3.05M","products":[{"brand":"HUAWEI","ref":"Nova 14 Pro 512GB 4G 12GB RAM","isHw":1,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"5500mAh","Pantalla":"6.8\"","Chipset":"—","Cám.T":"—","Cám.F":"50MP","NFC":"Sí","IP":"—"},"q":{"must":["nova 14 pro"],"not":[],"cap":"512","fb":"huawei","cq":"huawei nova 14 pro"},"p":{"Alkosto":"nd","Falabella":{"now":2599900.0,"was":3499900.0,"cmr":null},"Claro":"nd"}},{"brand":"APPLE","ref":"iPhone 15 128GB 5G 6GB RAM","isHw":0,"specs":{"RAM":"6GB","ROM":"128GB","Batería":"—","Pantalla":"6.1\"","Chipset":"Apple A16","Cám.T":"48MP","Cám.F":"12MP","NFC":"Sí","IP":"—"},"q":{"must":["iphone 15"],"not":[],"cap":"128","fb":"apple","cq":"apple iphone 15"},"p":{"Alkosto":{"now":2579010.0,"was":4165010.0,"cmr":null},"Falabella":{"now":3469900.0,"was":4599900.0,"cmr":null},"Claro":{"now":2599960.0,"was":null,"cmr":null}}},{"brand":"APPLE","ref":"iPhone 16e 128GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"128GB","Batería":"—","Pantalla":"6.1\"","Chipset":"Apple A18","Cám.T":"48MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["iphone 16e"],"not":[],"cap":"128","fb":"apple","cq":"apple iphone 16e"},"p":{"Alkosto":{"now":2899010.0,"was":3489010.0,"cmr":null},"Falabella":{"now":3399900.0,"was":3599900.0,"cmr":null},"Claro":{"now":2999960.0,"was":3518960.0,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy S25 FE 256GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"4900mAh","Pantalla":"6.7\"","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s25 fe"],"not":[],"cap":"256","fb":"samsung","cq":"samsung galaxy s25 fe"},"p":{"Alkosto":{"now":2899990.0,"was":3799990.0,"cmr":null},"Falabella":"nd","Claro":{"now":2799950.0,"was":3103950.0,"cmr":null}}},{"brand":"OPPO","ref":"Reno 14F 512GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"—","Pantalla":"6.5\"","Chipset":"Qualcomm Snapdragon","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["reno 14f"],"not":[],"cap":"512","fb":"oppo","cq":"oppo reno 14f"},"p":{"Alkosto":{"now":2399900.0,"was":3599050.0,"cmr":null},"Falabella":{"now":2599900.0,"was":3599900.0,"cmr":2399900.0},"Claro":"nd"}},{"brand":"VIVO","ref":"V60 Lite 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.77\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"32MP","NFC":"Sí","IP":"—"},"q":{"must":["v60 lite"],"not":[],"cap":"256","fb":"vivo","cq":"vivo v60 lite"},"p":{"Alkosto":{"now":2199050.0,"was":2999050.0,"cmr":null},"Falabella":{"now":2199900.0,"was":2999900.0,"cmr":null},"Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy A57 128GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"—","Batería":"—","Pantalla":"6.7\"","Chipset":"—","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy a57"],"not":[],"cap":"128","fb":"samsung","cq":"samsung galaxy a57"},"p":{"Alkosto":"nd","Falabella":{"now":2299900.0,"was":null,"cmr":1549900.0},"Claro":"nd"}},{"brand":"MOTOROLA","ref":"70 FUSION PLUS 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["70 fusion plus"],"not":[],"cap":"512","fb":"motorola","cq":"motorola 70 fusion plus"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":2799900.0,"was":null,"cmr":null}}},{"brand":"HONOR","ref":"600e 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["600e"],"not":[],"cap":"512","fb":"honor","cq":"honor 600e"},"p":{"Alkosto":{"now":2899050.0,"was":3499900.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"OPPO","ref":"Reno 14F 256GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.5\"","Chipset":"Qualcomm Snapdragon","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["reno 14f"],"not":[],"cap":"256","fb":"oppo","cq":"oppo reno 14f"},"p":{"Alkosto":"nd","Falabella":{"now":2299900.0,"was":3099900.0,"cmr":2199900.0},"Claro":"nd"}},{"brand":"VIVO","ref":"V70 FE 256GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"—","Batería":"—","Pantalla":"6.83\"","Chipset":"—","Cám.T":"200MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["v70 fe"],"not":[],"cap":"256","fb":"vivo","cq":"vivo v70 fe"},"p":{"Alkosto":{"now":2799050.0,"was":3999050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"TECNO","ref":"CAMON40 PREMIER 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["camon40 premier"],"not":[],"cap":"256","fb":"tecno","cq":"tecno camon40 premier"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":2299900.0,"was":null,"cmr":null}}}]},"Pura 80":{"range":"$2.9M–$4.6M","products":[{"brand":"HUAWEI","ref":"Pura 80 256GB 4G 12GB RAM","isHw":1,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"5170mAh","Pantalla":"—","Chipset":"Huawei Kirin","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["pura 80"],"not":[],"cap":"256","fb":"huawei","cq":"huawei pura 80"},"p":{"Alkosto":"nd","Falabella":{"now":2899900.0,"was":4199900.0,"cmr":null},"Claro":"nd"}},{"brand":"APPLE","ref":"iPhone 16e 128GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"128GB","Batería":"—","Pantalla":"6.1\"","Chipset":"Apple A18","Cám.T":"48MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["iphone 16e"],"not":[],"cap":"128","fb":"apple","cq":"apple iphone 16e"},"p":{"Alkosto":{"now":2899010.0,"was":3489010.0,"cmr":null},"Falabella":{"now":3399900.0,"was":3599900.0,"cmr":null},"Claro":{"now":2999960.0,"was":3518960.0,"cmr":null}}},{"brand":"HONOR","ref":"600 512GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["600"],"not":[],"cap":"512","fb":"honor","cq":"honor 600"},"p":{"Alkosto":{"now":3399050.0,"was":4499900.0,"cmr":null},"Falabella":{"now":3399900.0,"was":4499900.0,"cmr":3269900.0},"Claro":{"now":3399900.0,"was":null,"cmr":null}}},{"brand":"XIAOMI","ref":"17T 512GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"—","Pantalla":"6.59\"","Chipset":"Xiaomi","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["17t"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi 17t"},"p":{"Alkosto":{"now":3999050.0,"was":5499900.0,"cmr":null},"Falabella":{"now":3999900.0,"was":5499900.0,"cmr":3799900.0},"Claro":{"now":3999900.0,"was":null,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy S25 FE 256GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"4900mAh","Pantalla":"6.7\"","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s25 fe"],"not":[],"cap":"256","fb":"samsung","cq":"samsung galaxy s25 fe"},"p":{"Alkosto":{"now":2899990.0,"was":3799990.0,"cmr":null},"Falabella":"nd","Claro":{"now":2799950.0,"was":3103950.0,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy S26 256GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Samsung Exynos","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s26"],"not":["fe"],"cap":"256","fb":"samsung","cq":"samsung galaxy s26"},"p":{"Alkosto":"nd","Falabella":{"now":5079899.0,"was":null,"cmr":null},"Claro":{"now":3999950.0,"was":null,"cmr":null}}},{"brand":"APPLE","ref":"iPhone 15 256GB 5G","isHw":0,"specs":{"RAM":"6GB","ROM":"128GB","Batería":"—","Pantalla":"6.1\"","Chipset":"Apple A16","Cám.T":"48MP","Cám.F":"12MP","NFC":"Sí","IP":"—"},"q":{"must":["iphone 15"],"not":[],"cap":"256","fb":"apple","cq":"apple iphone 15"},"p":{"Alkosto":{"now":4039010.0,"was":5139010.0,"cmr":null},"Falabella":{"now":4668900.0,"was":null,"cmr":4499900.0},"Claro":"nd"}},{"brand":"OPPO","ref":"Reno 14 512GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"—","Pantalla":"6.6\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"50MP","NFC":"Sí","IP":"—"},"q":{"must":["reno 14"],"not":[],"cap":"512","fb":"oppo","cq":"oppo reno 14"},"p":{"Alkosto":{"now":3499900.0,"was":4999050.0,"cmr":null},"Falabella":{"now":3499900.0,"was":null,"cmr":null},"Claro":"nd"}},{"brand":"VIVO","ref":"V70 FE 512GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"—","Batería":"—","Pantalla":"6.83\"","Chipset":"—","Cám.T":"200MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["v70 fe"],"not":[],"cap":"512","fb":"vivo","cq":"vivo v70 fe"},"p":{"Alkosto":"nd","Falabella":{"now":4699900.0,"was":null,"cmr":null},"Claro":{"now":3299900.0,"was":3499900.0,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy S25 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s25"],"not":["fe"],"cap":"256","fb":"samsung","cq":"samsung galaxy s25"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":3399950.0,"was":3599950.0,"cmr":null}}},{"brand":"APPLE","ref":"iPhone 17e 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["iphone 17e"],"not":[],"cap":"256","fb":"apple","cq":"apple iphone 17e"},"p":{"Alkosto":{"now":3489010.0,"was":3489010.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"APPLE","ref":"iPhone 16e 512GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"128GB","Batería":"—","Pantalla":"6.1\"","Chipset":"Apple A18","Cám.T":"48MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["iphone 16e"],"not":[],"cap":"512","fb":"apple","cq":"apple iphone 16e"},"p":{"Alkosto":{"now":4499010.0,"was":5229010.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy S24FE 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s24fe"],"not":[],"cap":"512","fb":"samsung","cq":"samsung galaxy s24fe"},"p":{"Alkosto":{"now":4549990.0,"was":4549990.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"APPLE","ref":"17 256GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Apple A19","Cám.T":"48MP","Cám.F":"18MP","NFC":"Sí","IP":"—"},"q":{"must":["17"],"not":[],"cap":"256","fb":"apple","cq":"apple 17"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":4623960.0,"was":null,"cmr":null}}},{"brand":"HONOR","ref":"600e 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["600e"],"not":[],"cap":"512","fb":"honor","cq":"honor 600e"},"p":{"Alkosto":{"now":2899050.0,"was":3499900.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"MOTOROLA","ref":"70 FUSION PLUS 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["70 fusion plus"],"not":[],"cap":"512","fb":"motorola","cq":"motorola 70 fusion plus"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":2799900.0,"was":null,"cmr":null}}},{"brand":"MOTOROLA","ref":"Edge 50 Ultra 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["edge 50 ultra"],"not":[],"cap":"512","fb":"motorola","cq":"motorola edge 50 ultra"},"p":{"Alkosto":{"now":3599050.0,"was":4999050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"VIVO","ref":"V70 FE 256GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"—","Batería":"—","Pantalla":"6.83\"","Chipset":"—","Cám.T":"200MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["v70 fe"],"not":[],"cap":"256","fb":"vivo","cq":"vivo v70 fe"},"p":{"Alkosto":{"now":2799050.0,"was":3999050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"VIVO","ref":"V70 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.83\"","Chipset":"—","Cám.T":"200MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["v70"],"not":[],"cap":"256","fb":"vivo","cq":"vivo v70"},"p":{"Alkosto":"nd","Falabella":{"now":3999900.0,"was":null,"cmr":null},"Claro":"nd"}},{"brand":"VIVO","ref":"V70 512GB","isHw":0,"specs":{"RAM":"8GB","ROM":"512GB","Batería":"—","Pantalla":"6.59\"","Chipset":"—","Cám.T":"50MP","Cám.F":"50MP","NFC":"Sí","IP":"—"},"q":{"must":["v70"],"not":[],"cap":"512","fb":"vivo","cq":"vivo v70"},"p":{"Alkosto":{"now":4499050.0,"was":5999050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}}]},"Pura 80 Pro":{"range":"$3.4M–$5.6M","products":[{"brand":"HUAWEI","ref":"Mate 80 Pro 512GB 4G 16GB RAM","isHw":1,"specs":{"RAM":"16GB","ROM":"512GB","Batería":"5750mAh","Pantalla":"6.75\"","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["mate 80 pro"],"not":[],"cap":"512","fb":"huawei","cq":"huawei mate 80 pro"},"p":{"Alkosto":"nd","Falabella":{"now":4999900.0,"was":5999900.0,"cmr":null},"Claro":"nd"}},{"brand":"XIAOMI","ref":"17T 512GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"—","Pantalla":"6.59\"","Chipset":"Xiaomi","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["17t"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi 17t"},"p":{"Alkosto":{"now":3999050.0,"was":5499900.0,"cmr":null},"Falabella":{"now":3999900.0,"was":5499900.0,"cmr":3799900.0},"Claro":{"now":3999900.0,"was":null,"cmr":null}}},{"brand":"APPLE","ref":"iPhone Air 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["iphone air"],"not":[],"cap":"256","fb":"apple","cq":"apple iphone air"},"p":{"Alkosto":{"now":5249010.0,"was":5699010.0,"cmr":null},"Falabella":"nd","Claro":{"now":5429960.0,"was":5773960.0,"cmr":null}}},{"brand":"APPLE","ref":"iPhone 15 256GB 5G","isHw":0,"specs":{"RAM":"6GB","ROM":"128GB","Batería":"—","Pantalla":"6.1\"","Chipset":"Apple A16","Cám.T":"48MP","Cám.F":"12MP","NFC":"Sí","IP":"—"},"q":{"must":["iphone 15"],"not":[],"cap":"256","fb":"apple","cq":"apple iphone 15"},"p":{"Alkosto":{"now":4039010.0,"was":5139010.0,"cmr":null},"Falabella":{"now":4668900.0,"was":null,"cmr":4499900.0},"Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy S26 256GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Samsung Exynos","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s26"],"not":["fe"],"cap":"256","fb":"samsung","cq":"samsung galaxy s26"},"p":{"Alkosto":"nd","Falabella":{"now":5079899.0,"was":null,"cmr":null},"Claro":{"now":3999950.0,"was":null,"cmr":null}}},{"brand":"XIAOMI","ref":"17T Pro 1TB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"1024GB","Batería":"—","Pantalla":"6.83\"","Chipset":"Xiaomi","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["17t pro 1tb"],"not":[],"cap":"","fb":"xiaomi","cq":"xiaomi 17t pro 1tb"},"p":{"Alkosto":{"now":5099050.0,"was":6999900.0,"cmr":null},"Falabella":{"now":5099900.0,"was":6999900.0,"cmr":4599900.0},"Claro":"nd"}},{"brand":"OPPO","ref":"Reno 14 512GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"512GB","Batería":"—","Pantalla":"6.6\"","Chipset":"Mediatek","Cám.T":"50MP","Cám.F":"50MP","NFC":"Sí","IP":"—"},"q":{"must":["reno 14"],"not":[],"cap":"512","fb":"oppo","cq":"oppo reno 14"},"p":{"Alkosto":{"now":3499900.0,"was":4999050.0,"cmr":null},"Falabella":{"now":3499900.0,"was":null,"cmr":null},"Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy S26 512GB 5G","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Samsung Exynos","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s26"],"not":["fe"],"cap":"512","fb":"samsung","cq":"samsung galaxy s26"},"p":{"Alkosto":{"now":4699990.0,"was":6079990.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"APPLE","ref":"17 256GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Apple A19","Cám.T":"48MP","Cám.F":"18MP","NFC":"Sí","IP":"—"},"q":{"must":["17"],"not":[],"cap":"256","fb":"apple","cq":"apple 17"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":4623960.0,"was":null,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy S24FE 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s24fe"],"not":[],"cap":"512","fb":"samsung","cq":"samsung galaxy s24fe"},"p":{"Alkosto":{"now":4549990.0,"was":4549990.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"APPLE","ref":"iPhone 16e 512GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"128GB","Batería":"—","Pantalla":"6.1\"","Chipset":"Apple A18","Cám.T":"48MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["iphone 16e"],"not":[],"cap":"512","fb":"apple","cq":"apple iphone 16e"},"p":{"Alkosto":{"now":4499010.0,"was":5229010.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"APPLE","ref":"iPhone 17e 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["iphone 17e"],"not":[],"cap":"256","fb":"apple","cq":"apple iphone 17e"},"p":{"Alkosto":{"now":3489010.0,"was":3489010.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"XIAOMI","ref":"17T Pro 512GB 5G","isHw":0,"specs":{"RAM":"12GB","ROM":"1024GB","Batería":"—","Pantalla":"6.83\"","Chipset":"Xiaomi","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["17t pro"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi 17t pro"},"p":{"Alkosto":{"now":4799050.0,"was":6499900.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"MOTOROLA","ref":"Edge 50 Ultra 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["edge 50 ultra"],"not":[],"cap":"512","fb":"motorola","cq":"motorola edge 50 ultra"},"p":{"Alkosto":{"now":3599050.0,"was":4999050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"VIVO","ref":"V70 512GB","isHw":0,"specs":{"RAM":"8GB","ROM":"512GB","Batería":"—","Pantalla":"6.59\"","Chipset":"—","Cám.T":"50MP","Cám.F":"50MP","NFC":"Sí","IP":"—"},"q":{"must":["v70"],"not":[],"cap":"512","fb":"vivo","cq":"vivo v70"},"p":{"Alkosto":{"now":4499050.0,"was":5999050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"VIVO","ref":"V70 256GB 5G 8GB RAM","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.83\"","Chipset":"—","Cám.T":"200MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["v70"],"not":[],"cap":"256","fb":"vivo","cq":"vivo v70"},"p":{"Alkosto":"nd","Falabella":{"now":3999900.0,"was":null,"cmr":null},"Claro":"nd"}}]},"Pura 80 Ultra":{"range":"$5.8M–$7.6M","products":[{"brand":"HUAWEI","ref":"Pura 80 Ultra 512GB 4G 16GB RAM","isHw":1,"specs":{"RAM":"16GB","ROM":"512GB","Batería":"5170mAh","Pantalla":"6.8\"","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["pura 80 ultra"],"not":[],"cap":"512","fb":"huawei","cq":"huawei pura 80 ultra"},"p":{"Alkosto":"nd","Falabella":{"now":6599900.0,"was":8199900.0,"cmr":null},"Claro":"nd"}},{"brand":"APPLE","ref":"iPhone 17 Pro Max 256GB 5G","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.9\"","Chipset":"Apple A19 Pro","Cám.T":"48MP","Cám.F":"18MP","NFC":"Sí","IP":"—"},"q":{"must":["iphone 17 pro max"],"not":[],"cap":"256","fb":"apple","cq":"apple iphone 17 pro max"},"p":{"Alkosto":{"now":6949010.0,"was":6949010.0,"cmr":null},"Falabella":{"now":6599900.0,"was":6998900.0,"cmr":null},"Claro":{"now":6935960.0,"was":null,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy S26 Ultra 256GB 5G 12GB RAM","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.9\"","Chipset":"Qualcomm Snapdragon","Cám.T":"200MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s26 ultra"],"not":["fe"],"cap":"256","fb":"samsung","cq":"samsung galaxy s26 ultra"},"p":{"Alkosto":{"now":6649900.0,"was":null,"cmr":null},"Falabella":{"now":6499900.0,"was":6999900.0,"cmr":5999900.0},"Claro":{"now":6499950.0,"was":6999950.0,"cmr":null}}},{"brand":"APPLE","ref":"iPhone 17 Pro 256GB 5G","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Apple A19 Pro","Cám.T":"48MP","Cám.F":"18MP","NFC":"Sí","IP":"—"},"q":{"must":["iphone 17 pro"],"not":[],"cap":"256","fb":"apple","cq":"apple iphone 17 pro"},"p":{"Alkosto":{"now":6429010.0,"was":6429010.0,"cmr":null},"Falabella":{"now":6438900.0,"was":null,"cmr":6299900.0},"Claro":{"now":6376960.0,"was":null,"cmr":null}}},{"brand":"XIAOMI","ref":"17 Ultra 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["17 ultra"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi 17 ultra"},"p":{"Alkosto":{"now":7299050.0,"was":7299050.0,"cmr":null},"Falabella":"nd","Claro":{"now":7677900.0,"was":null,"cmr":null}}},{"brand":"SAMSUNG","ref":"Galaxy S24 Ultra 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s24 ultra"],"not":["fe"],"cap":"256","fb":"samsung","cq":"samsung galaxy s24 ultra"},"p":{"Alkosto":{"now":6899990.0,"was":6899990.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"SAMSUNG","ref":"S25 Ultra 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["s25 ultra"],"not":[],"cap":"256","fb":"samsung","cq":"samsung s25 ultra"},"p":{"Alkosto":{"now":6999990.0,"was":6999990.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy S26","isHw":0,"specs":{"RAM":"12GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Samsung Exynos","Cám.T":"50MP","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s26"],"not":["fe"],"cap":"","fb":"samsung","cq":"samsung galaxy s26"},"p":{"Alkosto":{"now":6049990.0,"was":6049990.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"SAMSUNG","ref":"Galaxy S26 Plus 256GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["galaxy s26 plus"],"not":["fe"],"cap":"256","fb":"samsung","cq":"samsung galaxy s26 plus"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":5999950.0,"was":null,"cmr":null}}},{"brand":"SAMSUNG","ref":"S25 Ultra 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["s25 ultra"],"not":[],"cap":"512","fb":"samsung","cq":"samsung s25 ultra"},"p":{"Alkosto":{"now":5799990.0,"was":7599990.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"APPLE","ref":"iPhone 17 512GB 5G","isHw":0,"specs":{"RAM":"8GB","ROM":"256GB","Batería":"—","Pantalla":"6.3\"","Chipset":"Apple A19","Cám.T":"48MP","Cám.F":"18MP","NFC":"Sí","IP":"—"},"q":{"must":["iphone 17"],"not":[],"cap":"512","fb":"apple","cq":"apple iphone 17"},"p":{"Alkosto":{"now":5758010.0,"was":5758010.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"MOTOROLA","ref":"Razr 60 Ultra 1TB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["razr 60 ultra 1tb"],"not":[],"cap":"","fb":"motorola","cq":"motorola razr 60 ultra 1tb"},"p":{"Alkosto":{"now":6499050.0,"was":6999050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}},{"brand":"XIAOMI","ref":"17 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["17"],"not":[],"cap":"512","fb":"xiaomi","cq":"xiaomi 17"},"p":{"Alkosto":"nd","Falabella":"nd","Claro":{"now":5792900.0,"was":null,"cmr":null}}},{"brand":"VIVO","ref":"X300 Pro 512GB 5G","isHw":0,"specs":{"RAM":"—","ROM":"—","Batería":"—","Pantalla":"—","Chipset":"—","Cám.T":"—","Cám.F":"—","NFC":"Sí","IP":"—"},"q":{"must":["x300 pro"],"not":[],"cap":"512","fb":"vivo","cq":"vivo x300 pro"},"p":{"Alkosto":{"now":6999050.0,"was":7499050.0,"cmr":null},"Falabella":"nd","Claro":"nd"}}]}};const ALK_APP='QX5IPS1B1Q',ALK_KEY='7a8800d62203ee3a9ff1cdf74f99b268',ALK_IDX='alkostoIndexAlgoliaPRD';
+const PROXY='https://api.allorigins.win/raw?url=';
+
+// Card-support info per retailer (verificado en vivo Jun 2026)
+const CARD_INFO={
+  Alkosto:{txt:'Tarjeta Alkosto, Banco Tuya y Addi disponibles, pero solo como <b>financiación a cuotas</b> — no bajan el precio.',cmr:false},
+  Falabella:{txt:'<span class="cmrtag">Tarjeta CMR baja el precio</span> (mostrado en verde). Además CMR Puntos y 3 cuotas sin interés.',cmr:true},
+  Claro:{txt:'Precio "Ahora" es el de Claro. Financiación con Addi y planes pospago; sin descuento adicional por banco.',cmr:false}
+};
+
+const norm=s=>(s||'').toLowerCase().replace(/[\s\|\-_.]/g,'');
+const ACC=/\b(case|funda|carcasa|protector|vidrio|templado|cargador|charger|cable|adaptador|soporte|powerbank|forro|mica|lamina|correa|banda|strap|cover)\b/i;
+function validName(name,must,not,cap){
+  const raw=(name||'').toLowerCase(),n=norm(name);
+  if(raw.includes('reacondicionado'))return false;
+  if(ACC.test(raw)&&!/celular|smartphone/.test(raw))return false;
+  if(!must.some(kw=>n.includes(norm(kw))))return false;
+  if(not.some(kw=>n.includes(norm(kw))))return false;
+  if(cap){const caps=(n.match(/(128|256|512)gb/g)||[]).map(x=>x.replace('gb',''));if(caps.length&&!caps.includes(cap))return false;}
+  return true;
+}
+
+// ===== spec comparison helpers (numeric extraction for "who wins") =====
+function numROM(s){const m=(s||'').match(/(\d+)GB/i);return m?+m[1]:0;}
+function numRAM(s){const m=(s||'').match(/(\d+)GB/i);return m?+m[1]:0;}
+function numBat(s){const m=(s||'').match(/(\d+)mAh/i);return m?+m[1]:0;}
+function numHz(s){const m=(s||'').match(/(\d+)Hz/i);return m?+m[1]:0;}
+function numCam(s){const m=(s||'').match(/(\d+)/);return m?+m[1]:0;}
+function numWatt(s){const m=(s||'').match(/(\d+)W/i);return m?+m[1]:0;}
+// returns +1 if huawei wins, -1 if competitor wins, 0 tie. higherBetter.
+function cmpSpec(key,hwVal,cpVal){
+  const f={"RAM":numRAM,"ROM":numROM,"Batería":numBat,"Pantalla":numHz,"Cám.T":numCam,"Cám.F":numCam}[key];
+  if(!f)return 0;
+  let h,c;
+  if(key==="Batería"){h=numBat(hwVal);c=numBat(cpVal);if(h===c){h=numWatt(hwVal);c=numWatt(cpVal);}}
+  else if(key==="Pantalla"){h=numHz(hwVal);c=numHz(cpVal);}
+  else{h=f(hwVal);c=f(cpVal);}
+  if(!h||!c)return 0;
+  return h>c?1:h<c?-1:0;
+}
+const SPEC_LABEL={"RAM":"RAM","ROM":"almacenamiento","Batería":"batería","Pantalla":"refresco de pantalla","Cám.T":"cámara principal","Cám.F":"cámara frontal"};
+
+// ===== STATE =====
+let data=JSON.parse(JSON.stringify(SEGS));
+let activeSeg=Object.keys(SEGS)[0];
+let busy=false;
+const isFile=location.protocol==='file:';
+const fm=n=>(n||n===0)&&n>0?'$'+Math.round(n).toLocaleString('es-CO'):'—';
+const fmM=n=>n&&n>0?'$'+(n/1000000).toFixed(2)+'M':'—';
+const pdf=(hw,c)=>c&&hw?((hw-c)/c*100):null;
+const eff=pr=>(pr&&typeof pr==='object')?(pr.cmr||pr.now):null;
+const has=pr=>pr&&typeof pr==='object'&&pr.now>0;
+function posLbl(p){if(p===null)return['Sin dato','bg-b'];if(p<-5)return['LÍDER PRECIO 🟢','bg-g'];if(p<=10)return['COMPETITIVO 🟡','bg-y'];if(p<=25)return['PREMIUM 🟠','bg-o'];return['MUY CARO 🔴','bg-r'];}
+function log(m,t='in'){const e=document.getElementById('logEl');e.classList.add('on');const d=document.createElement('div');d.className=t;d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;e.appendChild(d);e.scrollTop=e.scrollHeight;}
+function setPg(v){document.getElementById('pg').style.width=v+'%';}
+
+// ===== SCRAPERS =====
+async function alkScrape(cq,must,not,cap,floor){
+  try{
+    const d=await (await fetch(`https://${ALK_APP}-dsn.algolia.net/1/indexes/${ALK_IDX}/query`,{method:'POST',headers:{'X-Algolia-Application-Id':ALK_APP,'X-Algolia-API-Key':ALK_KEY,'Content-Type':'application/json'},body:JSON.stringify({query:cq+' '+cap,hitsPerPage:15,attributesToRetrieve:['lowestprice_double','baseprice_cop_string','maximumamountavailable_int','name_text_es','url_es_string']})})).json();
+    for(const h of d.hits||[]){
+      if(!validName((h.name_text_es||'')+' '+(h.url_es_string||''),must,not,cap))continue;
+      const now=h.lowestprice_double; if(now<floor)continue;
+      const stock=h.maximumamountavailable_int||0,was=parseFloat(h.baseprice_cop_string)||null;
+      if(stock===0)return"agotado";
+      return{now,was:was&&was>now?was:null};
+    }
+    return"nd";
+  }catch(e){return"err";}
+}
+async function claroScrape(cq,must,not,cap,floor){
+  try{
+    const url=`https://tienda.claro.com.co/api/0.1/catalog/product/searchterm/${encodeURIComponent(cq)}?pageSize=20&pageNumber=1`;
+    let r; try{r=await fetch(url,{headers:{'Accept':'application/json'}});if(!r.ok)throw 0;}catch(_){r=await fetch(PROXY+encodeURIComponent(url));}
+    const d=await r.json();
+    const hits=(d.contents||[]).filter(c=>validName(c.name,must,not,cap));
+    const clean=hits.filter(c=>!/tab a11|matepad|watch fit|reloj/i.test(c.name||''));
+    for(const pick of (clean.length?clean:hits)){
+      const pr=pick.price||[];
+      const disp=parseFloat((pr.find(p=>p.usage==='Display')||{}).value)||0;
+      const off=parseFloat((pr.find(p=>p.usage==='Offer')||{}).value)||0;
+      const now=off||disp; if(now<floor)continue;
+      if(String(pick.buyable)==='false')return"agotado";
+      return{now,was:(disp&&disp>now)?disp:null};
+    }
+    return"nd";
+  }catch(e){return"err";}
+}
+const falaCache={};
+async function falaLoad(brand){
+  if(falaCache[brand])return falaCache[brand];
+  const u=`https://www.falabella.com.co/falabella-co/category/CATG33244/Smartphones?f.product.brandName=${encodeURIComponent(brand)}&sz=48`;
+  try{
+    const html=await (await fetch(PROXY+encodeURIComponent(u))).text();
+    const m=html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    if(!m)return falaCache[brand]=[];
+    const results=JSON.parse(m[1])?.props?.pageProps?.results;
+    if(!results)return falaCache[brand]=[];
+    return falaCache[brand]=Object.values(results).map(p=>{
+      const pr=p.prices||[];const g=t=>{const x=pr.find(z=>z.type===t);return x?parseFloat((x.price?.[0]||'').replace(/\./g,''))||null:null;};
+      return{name:(p.displayName||'').toLowerCase(),seller:(p.sellerName||'').toLowerCase(),now:g('internetPrice')||g('eventPrice'),cmr:g('cmrPrice'),was:g('normalPrice')};
+    }).filter(p=>p.now);
+  }catch(e){return falaCache[brand]=[];}
+}
+function falaMatch(brand,must,not,cap,floor){
+  const pool=(falaCache[brand]||[]).filter(p=>p.seller==='falabella'||p.seller==='falabella.com');
+  for(const p of pool)
+    if(validName(p.name,must,not,cap)&&p.now>=floor)return{now:p.now,cmr:p.cmr,was:p.was&&p.was>p.now?p.was:null};
+  return"nd";
+}
+
+async function runUpdate(){
+  if(busy)return; if(isFile){alert('⚠️ No funciona desde file://\nSube a GitHub Pages para activar.');return;}
+  busy=true;document.getElementById('logEl').innerHTML='';
+  const b=document.getElementById('btnU');b.classList.add('loading');b.disabled=true;setPg(2);
+  for(const k in falaCache)delete falaCache[k];
+  const all=Object.entries(data).flatMap(([sk,s])=>s.products.map(p=>({...p,seg:sk,floor:s.floor})));
+  const fbrands=[...new Set(all.map(p=>p.q.fb))];
+  log('📡 Cargando Falabella ('+fbrands.length+' marcas) vía proxy...','in');
+  let i=0;for(const fb of fbrands){await falaLoad(fb);i++;log(`  ✓ ${fb}: ${(falaCache[fb]||[]).length} prod`,(falaCache[fb]||[]).length?'ok':'er');setPg(2+i/fbrands.length*25);}
+  let done=0;
+  for(const seg of Object.values(data))for(const p of seg.products){
+    const fl=seg.floor;
+    const a=await alkScrape(p.q.cq,p.q.must,p.q.not,p.q.cap,fl);
+    const c=await claroScrape(p.q.cq,p.q.must,p.q.not,p.q.cap,fl);
+    const f=falaMatch(p.q.fb,p.q.must,p.q.not,p.q.cap,fl);
+    p.p.Alkosto=a;p.p.Falabella=f;p.p.Claro=c;
+    done++;setPg(27+done/all.length*70);
+    log(`${p.brand} ${p.ref.slice(0,18)}: A:${typeof a==='object'?fm(a.now):a} F:${typeof f==='object'?fm(f.now):f} C:${typeof c==='object'?fm(c.now):c}`,'ok');
+  }
+  setPg(99);renderAll();setPg(100);
+  document.getElementById('ts').textContent='Actualizado: '+new Date().toLocaleString('es-CO');
+  log('🎉 Listo.','ok');
+  setTimeout(()=>{setPg(0);b.classList.remove('loading');b.disabled=false;busy=false;},1200);
+}
+
+// ===== JUDGE =====
+async function runJudge(){
+  if(busy)return; if(isFile){alert('⚠️ El juez requiere publicación web (no file://).');return;}
+  busy=true;
+  const b=document.getElementById('btnJ');b.classList.add('loading');b.disabled=true;
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('jbody').innerHTML='<div class="jrun"><div class="spin" style="display:inline-block;border-color:#ddd;border-top-color:var(--pp);width:26px;height:26px"></div><p style="margin-top:12px">Auditando los 3 retailers contra el dashboard…</p></div>';
+  for(const k in falaCache)delete falaCache[k];
+  const all=Object.entries(data).flatMap(([sk,s])=>s.products.map(p=>({...p,seg:sk,floor:s.floor})));
+  const fbrands=[...new Set(all.map(p=>p.q.fb))];
+  for(const fb of fbrands)await falaLoad(fb);
+  const anomalies=[]; let checks=0, okCount=0; const TOL=0.005;
+  function cmp(retailer,prod,dashVal,liveVal){
+    checks++;
+    const dHas=(dashVal&&typeof dashVal==='object'),lHas=(liveVal&&typeof liveVal==='object');
+    if(!dHas&&lHas){anomalies.push({crit:true,t:`${prod.brand} ${prod.ref} — ${retailer}`,d:`Dashboard: <span class="cmp">${dashVal||'sin dato'}</span> pero el sitio lo tiene a <span class="cmp">${fm(liveVal.now)}</span>.`});return;}
+    if(dHas&&!lHas){anomalies.push({crit:true,t:`${prod.brand} ${prod.ref} — ${retailer}`,d:`Dashboard: <span class="cmp">${fm(dashVal.now)}</span> pero el sitio responde <span class="cmp">${liveVal||'no listado'}</span>.`});return;}
+    if(!dHas&&!lHas){okCount++;return;}
+    const dn=dashVal.now,ln=liveVal.now;
+    if(Math.abs(dn-ln)/ln>TOL){const diff=ln-dn,pct=(diff/dn*100);anomalies.push({crit:Math.abs(pct)>5,t:`${prod.brand} ${prod.ref} — ${retailer}`,d:`Dashboard <span class="cmp">${fm(dn)}</span> vs sitio <span class="cmp">${fm(ln)}</span> (${pct>0?'+':''}${pct.toFixed(1)}%, ${diff>0?'subió':'bajó'} ${fm(Math.abs(diff))}).`});}
+    else okCount++;
+    if(retailer==='Falabella'){const dc=dashVal.cmr||null,lc=liveVal.cmr||null;if((dc||lc)&&(dc!==lc)&&(!dc||!lc||Math.abs(dc-lc)/lc>TOL))anomalies.push({crit:false,t:`${prod.brand} ${prod.ref} — Falabella CMR`,d:`CMR: dashboard <span class="cmp">${dc?fm(dc):'ninguno'}</span> vs sitio <span class="cmp">${lc?fm(lc):'ninguno'}</span>.`});}
+  }
+  for(const seg of Object.values(data))for(const p of seg.products){
+    const fl=seg.floor;
+    const a=await alkScrape(p.q.cq,p.q.must,p.q.not,p.q.cap,fl);
+    const c=await claroScrape(p.q.cq,p.q.must,p.q.not,p.q.cap,fl);
+    const f=falaMatch(p.q.fb,p.q.must,p.q.not,p.q.cap,fl);
+    cmp('Alkosto',p,p.p.Alkosto,a);cmp('Falabella',p,p.p.Falabella,f);cmp('Claro',p,p.p.Claro,c);
+  }
+  const crit=anomalies.filter(a=>a.crit).length;
+  let html=`<div class="jsum"><div class="jstat js-ok"><div class="num">${okCount}</div><div class="lbl">Coinciden</div></div><div class="jstat js-warn"><div class="num">${anomalies.length-crit}</div><div class="lbl">Diferencias leves</div></div><div class="jstat js-err"><div class="num">${crit}</div><div class="lbl">Anomalías críticas</div></div></div>`;
+  if(!anomalies.length)html+=`<div class="jok"><div class="ico">✅</div><h3>Sin anomalías</h3><p>Los ${checks} puntos de precio coinciden con los sitios.</p></div>`;
+  else{anomalies.sort((a,b)=>(b.crit?1:0)-(a.crit?1:0));html+=anomalies.map(a=>`<div class="anom ${a.crit?'crit':''}"><div class="at">${a.crit?'🔴':'🟡'} ${a.t}</div><div class="ad">${a.d}</div></div>`).join('');html+=`<div style="margin-top:14px;text-align:center"><button class="btn j" style="margin:0 auto" onclick="applyJudge()">✓ Aplicar precios del sitio</button></div>`;}
+  document.getElementById('jbody').innerHTML=html;
+  document.getElementById('ts').textContent='Auditoría: '+new Date().toLocaleTimeString('es-CO');
+  b.classList.remove('loading');b.disabled=false;busy=false;
+}
+async function applyJudge(){document.getElementById('ov').classList.remove('on');await runUpdate();}
+
+// ===== RENDER =====
+function renderAll(){renderTabs();renderCards();renderRank();renderP2P();renderVersus();renderAnalysis();}
+function renderTabs(){document.getElementById('tabs').innerHTML=Object.keys(data).map(k=>`<button class="tab ${k===activeSeg?'active':''}" onclick="pick('${k}')">${k}<br><small style="font-weight:400;opacity:.6">${data[k].range}</small></button>`).join('');}
+function pick(k){activeSeg=k;renderAll();}
+
+function renderCards(){
+  const seg=data[activeSeg];const RC={Alkosto:'#0057A8',Falabella:'#00793C',Claro:'#E30613'};
+  document.getElementById('cards').innerHTML=['Alkosto','Falabella','Claro'].map(r=>{
+    const hwV=seg.products.filter(p=>p.isHw&&eff(p.p[r])).map(p=>eff(p.p[r]));
+    const cpV=seg.products.filter(p=>!p.isHw&&eff(p.p[r])).map(p=>eff(p.p[r]));
+    const hwMin=hwV.length?Math.min(...hwV):null,cpMin=cpV.length?Math.min(...cpV):null;
+    const p=pdf(hwMin,cpMin);const[lbl,bc]=posLbl(p);
+    const threats=seg.products.filter(q=>!q.isHw&&eff(q.p[r])&&hwMin&&eff(q.p[r])<hwMin);
+    const bw=hwMin&&cpMin?Math.min(100,Math.max(8,cpMin/hwMin*100)):0;
+    const bf=p===null?'#CBD5E0':p<-5?'#10B981':p<=10?'#F59E0B':p<=25?'#F97316':'#EF4444';
+    const ci=CARD_INFO[r];
+    return`<div class="card"><div class="chd"><div class="dot" style="background:${RC[r]}"></div><span class="cn">${r}</span><span class="cst ${hwMin?'s-ok':'s-nd'}">${hwMin?'Con datos':'Sin precio'}</span></div>
+    <div class="cb"><div class="met"><span class="ml">Precio Huawei</span><span class="mv mhw">${fmM(hwMin)}</span></div>
+    <div class="met"><span class="ml">Mín. competencia</span><span class="mv">${fmM(cpMin)}</span></div>
+    <div class="bw"><div class="bf" style="width:${bw}%;background:${bf}"></div></div>
+    <div style="margin-top:9px;display:flex;align-items:center;justify-content:space-between"><span class="badge ${bc}">${lbl}</span>${p!==null?`<span style="font-size:11px;color:${p>0?'#EF4444':'#10B981'};font-weight:700">${p>0?'+':''}${p.toFixed(1)}% vs mín</span>`:''}</div>
+    ${threats.length?`<div class="tbox">⚠ ${threats.map(t=>t.brand).join(', ')} más barat${threats.length>1?'os':'o'} que Huawei</div>`:''}
+    <div class="cardtag">💳 <b>Tarjetas:</b> ${ci.txt}</div>
+    </div></div>`;
+  }).join('');
+}
+function pCell(pr,hw,thr){
+  if(!has(pr))return`<td class="pcell"><span class="p-nd">${pr==='agotado'?'agotado':'—'}</span></td>`;
+  let h=`<div class="p-now ${hw?'hw':thr?'thr':''}">${fm(pr.now)}</div>`;
+  if(pr.cmr)h+=`<div class="p-cmr">CMR ${fm(pr.cmr)}</div>`;
+  if(pr.was)h+=`<div class="p-was">${fm(pr.was)}</div>`;
+  return`<td class="pcell">${h}</td>`;
+}
+function renderRank(){
+  const seg=data[activeSeg];document.getElementById('rlabel').textContent=activeSeg+' — '+seg.range;
+  const rows=seg.products.map(p=>({...p,s:eff(p.p.Alkosto)||eff(p.p.Falabella)||eff(p.p.Claro)||Infinity})).sort((a,b)=>a.s-b.s).filter(p=>p.s<Infinity);
+  const hwMin=Math.min(...seg.products.filter(p=>p.isHw).flatMap(p=>['Alkosto','Falabella','Claro'].map(r=>eff(p.p[r])).filter(Boolean)),Infinity);
+  document.getElementById('ranking').innerHTML=`<table class="rt"><thead><tr><th>#</th><th>Marca</th><th>Referencia</th><th class="r">Alkosto</th><th class="r">Falabella</th><th class="r">Claro</th><th class="r">Δ vs HW</th><th>Estado</th></tr></thead><tbody>${rows.map((p,i)=>{
+    const hw=p.isHw,thr=!hw&&p.s<hwMin,d=hw?null:pdf(hwMin,p.s);
+    return`<tr class="${hw?'hw':''}"><td class="rn">${i+1}</td><td><span class="bc ${hw?'hw':''}">${p.brand}</span></td><td class="pn">${p.ref}</td>${pCell(p.p.Alkosto,hw,thr)}${pCell(p.p.Falabella,hw,thr)}${pCell(p.p.Claro,hw,thr)}<td class="dc ${d===null?'':d>0?'pos':'neg'}">${d===null?'BASE':(d>0?'+':'')+d.toFixed(1)+'%'}</td><td><span class="tc ${hw?'hw':thr?'yes':'no'}">${hw?'HUAWEI':thr?'⚠ AMENAZA':'✓ OK'}</span></td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+// PIN TO PIN — now compares each spec vs the Huawei hero (win/lose highlight)
+function renderP2P(){
+  const seg=data[activeSeg];
+  const hero=seg.products.find(p=>p.isHw);
+  const prods=[...seg.products.filter(p=>p.isHw),...seg.products.filter(p=>!p.isHw)].filter(p=>eff(p.p.Alkosto)||eff(p.p.Falabella)||eff(p.p.Claro));
+  if(!prods.length||!hero){document.getElementById('p2p').innerHTML='<div class="empty"><div class="ico">🔍</div><h3>Sin datos en este segmento</h3></div>';return;}
+  const sk=Object.keys(hero.specs);
+  const hwMin=Math.min(...prods.filter(p=>p.isHw).flatMap(p=>['Alkosto','Falabella','Claro'].map(r=>eff(p.p[r])).filter(Boolean)),Infinity);
+  const hdr=`<tr><th class="sc">Especificación</th>${prods.map(p=>`<th class="${p.isHw?'hwc':'cc'}">${p.brand}<br><small style="font-weight:400;font-size:8.5px">${p.ref.slice(0,24)}</small></th>`).join('')}</tr>`;
+  const sr=sk.map(k=>`<tr><td class="sl">${k}</td>${prods.map(p=>{
+    if(p.isHw)return `<td class="hwv">${p.specs[k]||'—'}</td>`;
+    const r=cmpSpec(k,hero.specs[k],p.specs[k]); // +1 hw wins, -1 competitor wins
+    const cls=r===-1?'win':r===1?'lose':''; // competitor better=green(win for them); huawei better=red(lose for them)
+    return `<td class="${cls}">${p.specs[k]||'—'}</td>`;
+  }).join('')}</tr>`).join('');
+  const pr=['Alkosto','Falabella','Claro'].map(r=>`<tr class="pr"><td class="sl" style="font-size:10px">💰 ${r}</td>${prods.map(p=>{const t=!p.isHw&&eff(p.p[r])&&eff(p.p[r])<hwMin;return p2Cell(p.p[r],p.isHw,t);}).join('')}</tr>`).join('');
+  const dr=`<tr class="dr"><td class="sl">Δ precio vs Huawei</td>${prods.map(p=>{if(p.isHw)return'<td>BASE</td>';const cp=eff(p.p.Alkosto)||eff(p.p.Falabella)||eff(p.p.Claro);const d=pdf(hwMin,cp);return d===null?'<td>—</td>':`<td class="${d>0?'dp':'dn'}">${d>0?'+':''}${d.toFixed(1)}%</td>`;}).join('')}</tr>`;
+  document.getElementById('p2p').innerHTML=`<table class="p2"><thead>${hdr}</thead><tbody>${sr}${pr}${dr}</tbody></table>`;
+}
+function p2Cell(pr,hw,thr){
+  if(!has(pr))return`<td class="${hw?'hwv':''}">${pr==='agotado'?'<span style="color:#aaa;font-size:10px">agotado</span>':'—'}</td>`;
+  let h=`${fm(pr.now)}`;if(pr.cmr)h+=`<span class="sub cmr">CMR ${fm(pr.cmr)}</span>`;if(pr.was)h+=`<span class="sub was">${fm(pr.was)}</span>`;
+  return`<td class="${hw?'hwv':thr?'tv':''}">${h}</td>`;
+}
+
+// VERSUS — one card per competitor: where it beats Huawei AND where Huawei wins
+function renderVersus(){
+  const seg=data[activeSeg];
+  const hero=seg.products.find(p=>p.isHw);
+  const comps=seg.products.filter(p=>!p.isHw&&(eff(p.p.Alkosto)||eff(p.p.Falabella)||eff(p.p.Claro)));
+  if(!hero||!comps.length){document.getElementById('vs').innerHTML='<div class="empty"><div class="ico">⚔️</div><h3>Sin competidores con datos</h3></div>';return;}
+  const hwP=Math.min(...['Alkosto','Falabella','Claro'].map(r=>eff(hero.p[r])).filter(Boolean));
+  document.getElementById('vs').innerHTML=comps.map(c=>{
+    const cP=Math.min(...['Alkosto','Falabella','Claro'].map(r=>eff(c.p[r])).filter(Boolean));
+    const compWins=[],hwWins=[];
+    Object.keys(hero.specs).forEach(k=>{
+      const r=cmpSpec(k,hero.specs[k],c.specs[k]);
+      if(r===-1)compWins.push(`<b>${SPEC_LABEL[k]}</b> (${c.specs[k]} vs ${hero.specs[k]})`);
+      else if(r===1)hwWins.push(`<b>${SPEC_LABEL[k]}</b> (${hero.specs[k]} vs ${c.specs[k]})`);
+    });
+    // price comparison
+    let priceLine='';
+    if(cP&&hwP){const d=(cP-hwP)/hwP*100;
+      if(d<-2)priceLine=`<div class="vsrow vswin"><span class="ico2">$</span><span class="vslab">Más barato: <b>${fm(cP)}</b> (${d.toFixed(1)}% vs Huawei ${fm(hwP)})</span></div>`;
+      else if(d>2)priceLine=`<div class="vsrow vshwin"><span class="ico2">$</span><span class="vslab">Huawei gana en precio: <b>${fm(hwP)}</b> (competidor +${d.toFixed(1)}%)</span></div>`;
+      else priceLine=`<div class="vsrow"><span class="ico2">≈</span><span class="vslab">Precio similar (${fm(cP)} vs ${fm(hwP)})</span></div>`;
+    }
+    return`<div class="vscard"><div class="vshd"><span class="bc">${c.brand}</span><span style="font-size:11px;color:var(--soft)">${c.ref.slice(0,22)}</span><span class="vsprice">${fmM(cP)}</span></div>
+    ${priceLine}
+    ${compWins.length?compWins.map(w=>`<div class="vsrow vswin"><span class="ico2">✓</span><span class="vslab">Gana en ${w}</span></div>`).join(''):''}
+    ${hwWins.length?hwWins.map(w=>`<div class="vsrow vshwin"><span class="ico2">✓</span><span class="vslab">Huawei gana en ${w}</span></div>`).join(''):'<div class="vsnone">Huawei no supera a este equipo en specs medibles.</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ANALYSIS — written executive summary per segment
+function renderAnalysis(){
+  const seg=data[activeSeg];
+  const hero=seg.products.find(p=>p.isHw);
+  const allHw=seg.products.filter(p=>p.isHw&&(eff(p.p.Alkosto)||eff(p.p.Falabella)||eff(p.p.Claro)));
+  const comps=seg.products.filter(p=>!p.isHw&&(eff(p.p.Alkosto)||eff(p.p.Falabella)||eff(p.p.Claro)));
+  const el=document.getElementById('analysis');
+  if(!hero||!allHw.length){el.innerHTML='<p class="vsnone">Sin datos de Huawei en este segmento para analizar.</p>';return;}
+  const hwP=Math.min(...allHw.flatMap(p=>['Alkosto','Falabella','Claro'].map(r=>eff(p.p[r])).filter(Boolean)));
+  const hwName=hero.ref;
+
+  // threats: competitors cheaper than Huawei (sorted by how much cheaper)
+  const threats=comps.map(c=>{
+    const cP=Math.min(...['Alkosto','Falabella','Claro'].map(r=>eff(c.p[r])).filter(Boolean));
+    return{...c,cP,gap:(cP-hwP)/hwP*100};
+  }).filter(c=>c.cP&&c.gap<-1).sort((a,b)=>a.gap-b.gap);
+
+  // where huawei is cheaper
+  const hwWinsPrice=comps.map(c=>{
+    const cP=Math.min(...['Alkosto','Falabella','Claro'].map(r=>eff(c.p[r])).filter(Boolean));
+    return{...c,cP,gap:(cP-hwP)/hwP*100};
+  }).filter(c=>c.cP&&c.gap>1).sort((a,b)=>b.gap-a.gap);
+
+  // position summary
+  const cheapestComp=comps.map(c=>Math.min(...['Alkosto','Falabella','Claro'].map(r=>eff(c.p[r])).filter(Boolean))).filter(Boolean);
+  const minComp=cheapestComp.length?Math.min(...cheapestComp):null;
+  const posPct=minComp?((hwP-minComp)/minComp*100):null;
+  let posText;
+  if(posPct===null)posText=`El <span class="akpi">${hwName}</span> no tiene competidores con precio listado en este segmento hoy.`;
+  else if(posPct<-5)posText=`El <span class="akpi">${hwName}</span> (${fm(hwP)}) es <b>el más barato del segmento</b>, ${Math.abs(posPct).toFixed(1)}% por debajo del competidor más cercano. Posición de liderazgo en precio.`;
+  else if(posPct<=10)posText=`El <span class="akpi">${hwName}</span> (${fm(hwP)}) está <b>en rango competitivo</b> — a ${posPct.toFixed(1)}% del competidor más barato (${fm(minComp)}). Diferencia defendible con su propuesta de specs.`;
+  else posText=`El <span class="akpi">${hwName}</span> (${fm(hwP)}) cotiza <b>${posPct.toFixed(1)}% por encima</b> del competidor más barato (${fm(minComp)}). Posición premium que exige justificar valor.`;
+
+  // card support note
+  const cmrThreats=threats.filter(t=>{const f=t.p.Falabella;return f&&typeof f==='object'&&f.cmr;});
+
+  let html=`<div class="ahd">Segmento ${activeSeg} · ${seg.range} · referencia Huawei: ${hwName}</div>`;
+  html+=`<h3>📍 Posición de Huawei</h3><p>${posText}</p>`;
+
+  html+=`<h4>🔴 Productos que golpean a Huawei con buen precio</h4>`;
+  if(threats.length){
+    html+=threats.map(t=>{
+      const f=t.p.Falabella;const cmrNote=(f&&typeof f==='object'&&f.cmr)?` Con <span style="color:var(--cmr);font-weight:700">CMR baja aún más a ${fm(f.cmr)}</span>.`:'';
+      // spec edge of this competitor
+      const edges=[];Object.keys(hero.specs).forEach(k=>{if(cmpSpec(k,hero.specs[k],t.specs[k])===-1)edges.push(SPEC_LABEL[k]);});
+      const edgeNote=edges.length?` Además supera a Huawei en ${edges.slice(0,3).join(', ')}.`:'';
+      return`<div class="athreat">⚠️ <b>${t.brand} ${t.ref}</b> a <b>${fm(t.cP)}</b> — ${Math.abs(t.gap).toFixed(1)}% más barato que el ${hwName}.${cmrNote}${edgeNote}</div>`;
+    }).join('');
+  }else{
+    html+=`<p class="vsnone">Ningún competidor con datos está por debajo del precio de Huawei en este segmento. Huawei domina el precio aquí.</p>`;
+  }
+
+  html+=`<h4>🟢 Dónde Huawei tiene ventaja de precio</h4>`;
+  if(hwWinsPrice.length){
+    html+=hwWinsPrice.slice(0,5).map(w=>`<div class="awin">✅ Huawei (${fm(hwP)}) es <b>${w.gap.toFixed(1)}% más barato</b> que ${w.brand} ${w.ref} (${fm(w.cP)}).</div>`).join('');
+  }else{
+    html+=`<p class="vsnone">En precio, Huawei no queda por debajo de ningún competidor listado en este segmento.</p>`;
+  }
+
+  // CMR strategic note
+  if(cmrThreats.length){
+    html+=`<h4>💳 Efecto tarjeta CMR (Falabella)</h4><div class="amov">La tarjeta CMR de Falabella refuerza a ${cmrThreats.map(t=>t.brand).join(', ')} con precios aún más bajos para el cliente bancarizado. Huawei no tiene un equivalente de descuento por tarjeta en este canal, lo que amplía la brecha real de precio en el punto de venta.</div>`;
+  }
+
+  el.innerHTML=html;
+}
+
+// ===== INIT =====
+if(isFile)document.getElementById('note').classList.add('show');
+renderAll();
+</script>
+</body>
+</html>
