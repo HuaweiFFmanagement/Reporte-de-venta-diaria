@@ -204,6 +204,16 @@ button.ghost{
 .footer-note{font-size:11px;color:var(--ink-soft);text-align:center;padding:16px 30px 0;line-height:1.6;}
 .empty-msg{text-align:center;color:var(--ink-soft);padding:24px 10px;font-size:13px;}
 .announcement-card{background:var(--amber-bg);box-shadow:none;color:#7a5406;font-size:13px;line-height:1.5;font-weight:600;}
+
+/* ---------- lobby (Huawei Retail System) ---------- */
+.lobby-header{padding:40px 24px 6px;text-align:center;}
+.lobby-logo{color:var(--red);font-weight:800;font-size:19px;letter-spacing:4px;font-family:'Poppins';}
+.lobby-title{font-family:'Poppins';font-weight:800;font-size:25px;margin-top:16px;color:var(--ink);letter-spacing:-0.3px;line-height:1.2;}
+.lobby-sub{font-size:13px;color:var(--ink-soft);margin-top:8px;}
+.lobby-card{background:var(--white);box-shadow:var(--shadow-md);border-radius:20px;padding:24px 20px;margin-bottom:14px;text-align:center;cursor:pointer;transition:transform .1s;color:var(--ink);}
+.lobby-card:active{transform:scale(0.98);}
+.lobby-card-title{font-family:'Poppins';font-weight:700;font-size:16px;}
+.lobby-card-sub{font-size:12px;color:var(--ink-soft);margin-top:6px;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -250,6 +260,9 @@ const STORAGE_KEY = "ventas_agosto_2026_cat"; // se usa como respaldo local si e
    1. Despliega el Apps Script (ver Code.gs que te compartí) como Web App.
    2. Pega aquí la URL que termina en /exec.                                 */
 const API_URL = "https://script.google.com/macros/s/AKfycbwihy2jiunXvOK98toaGEIaKBndlDwlsxBaLbJWuNN8dOKHd8QlEpvAeqrdi2J5KEdk/exec";
+/* Apps Script APARTE, instalado directo en el Google Sheet de quiebres —
+   pega aquí la URL que te da al desplegarlo (ver Code_Quiebre.gs). */
+const QUIEBRE_API_URL = "https://script.google.com/macros/s/AKfycbziQMljQpkO_n9_ahdoqDG0ra7HtJXzOM4Si_gWvogWvhwAoF8JVcRXQrRNZRv2nalp/exec";
 
 /* ============ helpers ============ */
 function numOr0(v){ const n = Number(v); return isNaN(n) ? 0 : n; }
@@ -378,7 +391,7 @@ function currentWeekNum(){
 /* ============ storage (Google Sheets vía Apps Script, JSONP) ============
    Usamos una etiqueta <script> en vez de fetch() para evitar por completo
    los problemas de CORS al conectar con Apps Script.                     */
-function jsonpRequest(params, timeoutMs){
+function jsonpRequest(params, timeoutMs, apiUrl){
   return new Promise((resolve, reject)=>{
     const cbName = '__jsonp_cb_' + Math.random().toString(36).slice(2);
     const script = document.createElement('script');
@@ -390,7 +403,7 @@ function jsonpRequest(params, timeoutMs){
     }
     window[cbName] = (data)=>{ cleanup(); resolve(data); };
     const qs = new URLSearchParams({...params, callback: cbName}).toString();
-    script.src = `${API_URL}?${qs}`;
+    script.src = `${apiUrl || API_URL}?${qs}`;
     script.onerror = ()=>{ cleanup(); reject(new Error('jsonp load error')); };
     timeoutId = setTimeout(()=>{ cleanup(); reject(new Error('jsonp timeout')); }, timeoutMs || 20000);
     document.body.appendChild(script);
@@ -398,9 +411,9 @@ function jsonpRequest(params, timeoutMs){
 }
 /* Reintenta una vez en silencio antes de rendirse — Apps Script a veces responde
    lento cuando varios promotores cargan venta al mismo tiempo. */
-async function jsonpRequestRetry(params, timeoutMs){
-  try{ return await jsonpRequest(params, timeoutMs); }
-  catch(e){ return await jsonpRequest(params, timeoutMs); }
+async function jsonpRequestRetry(params, timeoutMs, apiUrl){
+  try{ return await jsonpRequest(params, timeoutMs, apiUrl); }
+  catch(e){ return await jsonpRequest(params, timeoutMs, apiUrl); }
 }
 
 async function loadAllSales(){
@@ -419,6 +432,12 @@ async function saveEntry(storeCode, iso, roleKey, catAmounts){
       action:'save', storeCode, date: iso, promoter: roleKey || 'P1',
       SP: catAmounts.SP||0, Tab: catAmounts.Tab||0, WR: catAmounts.WR||0, AUD: catAmounts.AUD||0
     });
+    return !!(data && data.ok);
+  }catch(e){ return false; }
+}
+async function submitQuiebre(fields){
+  try{
+    const data = await jsonpRequestRetry({ action:'reportQuiebre', ...fields }, 25000, QUIEBRE_API_URL);
     return !!(data && data.ok);
   }catch(e){ return false; }
 }
@@ -448,14 +467,21 @@ let cvComboTerm = '';
 let cvComboOpen = false;
 let cargarVentaLog = []; // feedback de lo cargado en esta sesión: {store, date, total}
 let cargarVentaAllCache = null;
+let bulkParsedAgg = null; // {storeCode: {iso: {SP,Tab,WR,AUD}}} — resultado de leer el Excel de venta oficial
+let bulkUnmatched = [];
+let bulkSkippedUnits = 0;
 let catViewMode = 'month'; // 'month' | 'week'
 let authStage = null; // null | 'gate'
 let authRole = 'admin'; // 'admin' | 'supervisor'
 let authError = '';
 let authSupName = SUPERVISORS[0] ? SUPERVISORS[0].name : '';
+let currentSection = null; // null = lobby | 'ventas' | 'inventario'
 
 function render(){
   const app = document.getElementById('app');
+  if(currentSection===null){ renderLobby(); return; }
+  if(currentSection==='inventario'){ renderInventoryPlaceholder(); return; }
+  // currentSection === 'ventas' — flujo existente de la app de ventas
   if(authStage==='gate' && !window.__showAdmin){
     app.innerHTML = renderAuthGate();
     bindAuthGate();
@@ -467,6 +493,222 @@ function render(){
     renderAdmin();
   } else {
     renderDashboard();
+  }
+}
+
+let lobbyAnnouncementCache = null; // {text, imageUrl} — cacheado en memoria
+async function renderLobby(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+  <div class="lobby-header">
+    <div class="lobby-logo">HUAWEI</div>
+    <div class="lobby-title">Huawei Retail System</div>
+    <div class="lobby-sub">Sistema de gestión en punto de venta · Colombia</div>
+  </div>
+  <div class="section" style="padding-top:8px;padding-bottom:0;" id="lobbyAnnouncementSlot"></div>
+  <div class="section" style="padding-top:6px;">
+    <div class="lobby-card" id="navVentas">
+      <div class="lobby-card-title">Cargue de venta diaria</div>
+      <div class="lobby-card-sub">Reporta tu venta y consulta tu cumplimiento</div>
+    </div>
+    <a class="lobby-card" href="benchmark.html" target="_blank" rel="noopener" style="text-decoration:none;display:block;">
+      <div class="lobby-card-title">Compara productos</div>
+      <div class="lobby-card-sub">Benchmark frente a la competencia</div>
+    </a>
+    <div class="lobby-card" id="navInventario">
+      <div class="lobby-card-title">Reporta quiebre de inventario</div>
+      <div class="lobby-card-sub">Próximamente</div>
+    </div>
+  </div>
+  `;
+  document.getElementById('navVentas').addEventListener('click', ()=>{ currentSection='ventas'; render(); });
+  document.getElementById('navInventario').addEventListener('click', ()=>{ currentSection='inventario'; render(); });
+
+  if(lobbyAnnouncementCache===null){
+    try{ const res = await jsonpRequestRetry({action:'getAnnouncement'}); lobbyAnnouncementCache = res || {}; }
+    catch(e){ lobbyAnnouncementCache = {}; }
+  }
+  const slot = document.getElementById('lobbyAnnouncementSlot');
+  if(slot && (lobbyAnnouncementCache.text || lobbyAnnouncementCache.imageUrl)){
+    const imgHtml = lobbyAnnouncementCache.imageUrl ? `<img src="${escapeHtml(lobbyAnnouncementCache.imageUrl)}" alt="Comunicado" style="width:100%;border-radius:12px;margin-bottom:${lobbyAnnouncementCache.text?'10px':'0'};display:block;" onerror="this.style.display='none';">` : '';
+    const textHtml = lobbyAnnouncementCache.text ? `📣 ${escapeHtml(lobbyAnnouncementCache.text)}` : '';
+    slot.innerHTML = `<div class="card announcement-card">${imgHtml}${textHtml}</div>`;
+  }
+}
+
+const MOTIVO_OPTIONS = ['Sin reposición del CEDI','Agotado en bodega','Pedido en tránsito','Error de inventario','Otro'];
+const QUIEBRE_CATS = ['Smartphones','Tablets','Wearables','Audio'];
+let qStoreCode = null;
+let qComboTerm = '';
+let qComboOpen = false;
+let qCiudad = '';
+let qSessionLog = []; // {pdv, sku} — feedback de lo reportado en esta sesión
+
+function renderInventoryPlaceholder(){
+  const app = document.getElementById('app');
+  const store = qStoreCode ? STORES.find(s=>s.code===qStoreCode) : null;
+
+  let formHtml = '';
+  if(store){
+    formHtml = `
+    <div class="card">
+      <div class="label-eyebrow" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>${escapeHtml(store.store)} · ${store.code}</span>
+        <span class="linkbtn" id="qChangeStore">Cambiar tienda</span>
+      </div>
+      <label class="fieldlabel" style="margin-top:8px;">Ciudad</label>
+      <input id="qCiudad" placeholder="Ej: Bogotá" value="${escapeHtml(qCiudad)}" />
+
+      <label class="fieldlabel" style="margin-top:12px;">Referencia (SKU)</label>
+      <input id="qSku" placeholder="Ej: Matepad 11.5 256" />
+
+      <label class="fieldlabel" style="margin-top:12px;">Descripción del producto</label>
+      <input id="qDesc" placeholder="Ej: Matepad Paper Mate" />
+
+      <div class="form-row" style="display:flex;gap:10px;margin-top:12px;">
+        <div style="flex:1;">
+          <label class="fieldlabel">Categoría</label>
+          <select id="qCat">${QUIEBRE_CATS.map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
+        </div>
+      </div>
+
+      <div class="cat-input-grid" style="margin-top:12px;">
+        <div class="cat-input-item">
+          <label>Stock actual (uds)</label>
+          <input type="number" min="0" id="qStockActual" placeholder="0" />
+        </div>
+        <div class="cat-input-item">
+          <label>Stock mínimo requerido</label>
+          <input type="number" min="0" id="qStockMinimo" placeholder="0" />
+        </div>
+      </div>
+
+      <label class="fieldlabel" style="margin-top:12px;">Motivo del quiebre</label>
+      <select id="qMotivo">${MOTIVO_OPTIONS.map(m=>`<option value="${m}">${m}</option>`).join('')}</select>
+      <input id="qMotivoOtro" placeholder="Especifica el motivo..." style="margin-top:8px;display:none;" />
+
+      <label class="fieldlabel" style="margin-top:12px;">Observaciones</label>
+      <input id="qObs" placeholder="Opcional" />
+
+      <div style="height:14px;"></div>
+      <button class="primary" id="qSubmitBtn">Enviar reporte</button>
+    </div>`;
+  }
+
+  const logHtml = qSessionLog.length ? `
+    <div class="card">
+      <div class="label-eyebrow">Reportado en esta sesión</div>
+      ${qSessionLog.slice(0,10).map(l=>`
+        <div class="hist-row"><div class="hist-top"><span class="hist-date">${escapeHtml(l.pdv)}</span><span class="hist-units">${escapeHtml(l.sku)}</span></div></div>
+      `).join('')}
+    </div>` : '';
+
+  const app2 = document.getElementById('app');
+  app2.innerHTML = `
+  <div class="topbar">
+    <button class="backbtn" id="backToLobbyInv">‹ Huawei Retail System</button>
+    <div class="eyebrow">Field Force</div>
+    <h1>Reporta quiebre de inventario</h1>
+  </div>
+  <div class="section" style="padding-top:22px;">
+    <div class="card">
+      <div class="label-eyebrow">Punto de venta</div>
+      <label class="combo-label" style="margin-top:2px;">Buscar tienda</label>
+      <div class="combo-input-wrap">
+        <input id="qComboInput" autocomplete="off" placeholder="Escribe el nombre de tu tienda..." value="${escapeHtml(qComboTerm)}" />
+        <span class="combo-caret">▾</span>
+        <div id="qComboList" class="combo-list ${qComboOpen?'open':''}"></div>
+      </div>
+    </div>
+    ${formHtml}
+    ${logHtml}
+  </div>
+  `;
+  document.getElementById('backToLobbyInv').addEventListener('click', ()=>{ currentSection=null; render(); });
+  bindQuiebreForm();
+}
+
+function qFilteredList(){
+  const term = qComboTerm.trim();
+  if(!term) return SORTED_STORES;
+  const nTerm = normalize(term);
+  return SORTED_STORES.filter(s => normalize(s.store).includes(nTerm) || normalize(s.code).includes(nTerm));
+}
+function renderQComboList(){
+  const list = document.getElementById('qComboList');
+  if(!list) return;
+  const items = qFilteredList();
+  list.innerHTML = items.length ? items.map(s=>`
+    <div class="combo-opt" data-code="${s.code}">
+      <div class="n">${highlightMatch(s.store, qComboTerm)}</div>
+      <div class="s">${s.code} · ${s.account||s.channel||''}${s.supervisor?(' · '+escapeHtml(s.supervisor)):''}</div>
+    </div>`).join('') : `<div class="combo-empty">No encontramos tiendas con ese nombre.</div>`;
+  list.classList.toggle('open', qComboOpen);
+  list.querySelectorAll('.combo-opt').forEach(el=>{
+    el.addEventListener('mousedown', (e)=>{
+      e.preventDefault();
+      qStoreCode = el.dataset.code; qComboTerm=''; qComboOpen=false;
+      renderInventoryPlaceholder();
+    });
+  });
+}
+function bindQuiebreForm(){
+  const input = document.getElementById('qComboInput');
+  if(input){
+    renderQComboList();
+    input.addEventListener('focus', ()=>{ qComboOpen=true; renderQComboList(); });
+    input.addEventListener('input', (e)=>{ qComboTerm=e.target.value; qComboOpen=true; renderQComboList(); });
+    document.addEventListener('click', (e)=>{
+      if(!e.target.closest('.combo-input-wrap')){ qComboOpen=false; const l=document.getElementById('qComboList'); if(l) l.classList.remove('open'); }
+    }, {once:true});
+  }
+  const changeBtn = document.getElementById('qChangeStore');
+  if(changeBtn) changeBtn.addEventListener('click', ()=>{ qStoreCode=null; renderInventoryPlaceholder(); });
+
+  const motivoSel = document.getElementById('qMotivo');
+  const motivoOtro = document.getElementById('qMotivoOtro');
+  if(motivoSel && motivoOtro){
+    motivoSel.addEventListener('change', ()=>{ motivoOtro.style.display = motivoSel.value==='Otro' ? 'block' : 'none'; });
+  }
+
+  const submitBtn = document.getElementById('qSubmitBtn');
+  if(submitBtn){
+    submitBtn.addEventListener('click', async ()=>{
+      const store = STORES.find(s=>s.code===qStoreCode);
+      qCiudad = document.getElementById('qCiudad').value.trim();
+      const sku = document.getElementById('qSku').value.trim();
+      const desc = document.getElementById('qDesc').value.trim();
+      const categoria = document.getElementById('qCat').value;
+      const stockActual = document.getElementById('qStockActual').value || 0;
+      const stockMinimo = document.getElementById('qStockMinimo').value || 0;
+      const motivo = document.getElementById('qMotivo').value;
+      const motivoOtroVal = document.getElementById('qMotivoOtro').value.trim();
+      const observaciones = document.getElementById('qObs').value.trim();
+
+      if(!sku){ showToast('Escribe la referencia (SKU)'); return; }
+      if(motivo==='Otro' && !motivoOtroVal){ showToast('Especifica el motivo'); return; }
+
+      submitBtn.textContent = 'Enviando...'; submitBtn.disabled = true;
+      const ok = await submitQuiebre({
+        fecha: todayISO(),
+        canal: store.account || store.channel || '',
+        pdv: store.store,
+        ciudad: qCiudad,
+        supervisor: store.supervisor || '',
+        sku, descripcion: desc, categoria,
+        stockActual, stockMinimo,
+        motivo: motivo==='Otro' ? motivoOtroVal : motivo,
+        observaciones
+      });
+      if(ok){
+        showToast('Reporte enviado ✓');
+        qSessionLog.unshift({pdv: store.store, sku});
+        renderInventoryPlaceholder();
+      } else {
+        showToast('No se pudo enviar, intenta de nuevo');
+        submitBtn.textContent = 'Enviar reporte'; submitBtn.disabled = false;
+      }
+    });
   }
 }
 function openStoreDetail(code){
@@ -543,12 +785,11 @@ function comboFilteredList(){
   return SORTED_STORES.filter(s => normalize(s.store).includes(nTerm) || normalize(s.code).includes(nTerm));
 }
 
-let announcementCache = null; // {text, imageUrl} del comunicado, cacheado en memoria para no repetir la llamada en cada render
-
 async function renderPicker(){
   const app = document.getElementById('app');
   app.innerHTML = `
   <div class="topbar">
+    <button class="backbtn" id="backToLobby">‹ Huawei Retail System</button>
     <div class="eyebrow">Field Force · ${TARGET_MONTH_LABEL}</div>
     <h1>Field force daily sales report</h1>
   </div>
@@ -560,25 +801,10 @@ async function renderPicker(){
       <div id="comboList" class="combo-list ${comboOpen?'open':''}"></div>
     </div>
   </div>
-  <div class="footer-note" style="padding-top:26px;">
-    <span class="linkbtn" id="adminLink">Acceso de supervisión</span>
-    &nbsp;·&nbsp;
-    <a class="linkbtn" href="benchmark.html" target="_blank" rel="noopener">Benchmark de competencia</a>
-  </div>
-  <div id="announcementSlot"></div>
+  <div class="footer-note" style="padding-top:26px;"><span class="linkbtn" id="adminLink">Acceso de supervisión</span></div>
   `;
   bindPicker();
-  // el comunicado se carga aparte y no bloquea el resto de la pantalla
-  if(announcementCache===null){
-    try{ const res = await jsonpRequestRetry({action:'getAnnouncement'}); announcementCache = res || {}; }
-    catch(e){ announcementCache = {}; }
-  }
-  const slot = document.getElementById('announcementSlot');
-  if(slot && (announcementCache.text || announcementCache.imageUrl)){
-    const imgHtml = announcementCache.imageUrl ? `<img src="${escapeHtml(announcementCache.imageUrl)}" alt="Comunicado" style="width:100%;border-radius:12px;margin-bottom:${announcementCache.text?'10px':'0'};display:block;" onerror="this.style.display='none';">` : '';
-    const textHtml = announcementCache.text ? `📣 ${escapeHtml(announcementCache.text)}` : '';
-    slot.innerHTML = `<div class="section" style="padding-top:6px;"><div class="card announcement-card">${imgHtml}${textHtml}</div></div>`;
-  }
+  document.getElementById('backToLobby').addEventListener('click', ()=>{ currentSection=null; render(); });
 }
 
 function renderComboList(){
@@ -1060,8 +1286,14 @@ function renderTabCargarVenta(all){
       </div>
     </div>
     ${formHtml}
+    <div class="card">
+      <div class="label-eyebrow">Carga masiva desde Excel (venta oficial)</div>
+      <div class="fieldlabel" style="margin-bottom:10px;">Sube el archivo exportado de Power BI — debe traer una pestaña llamada "Diario_x_Categoria" (tienda, categoría y un día por columna).</div>
+      <input type="file" id="bulkFileInput" accept=".xlsx,.xls" />
+      <div id="bulkPreview"></div>
+    </div>
     ${logHtml}
-    <div class="footer-note">Esta carga se guarda igual que si la hiciera el promotor de esa tienda — reemplaza lo que hubiera para esa fecha y ese rol, no se suma encima.</div>
+    <div class="footer-note">La carga individual reemplaza lo que hubiera para esa fecha y rol. La carga masiva usa siempre el rol "Promotor 1" de cada tienda — en tiendas con varios promotores, ese total queda bajo Promotor 1.</div>
   </div>`;
 }
 
@@ -1105,6 +1337,10 @@ function bindCargarVentaTab(){
   document.querySelectorAll('#cvRoleToggle .filter-chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{ cargarVentaRole = chip.dataset.role; renderAdmin(); });
   });
+
+  const bulkInput = document.getElementById('bulkFileInput');
+  if(bulkInput) bulkInput.addEventListener('change', handleBulkFile);
+  if(bulkParsedAgg) renderBulkPreview(); // conserva la vista previa si ya se había leído un archivo
 
   function recalcCvPreview(){
     let t=0;
@@ -1158,6 +1394,147 @@ function bindCargarVentaTab(){
       }
     });
   }
+}
+
+/* ---------- carga masiva desde el Excel de venta oficial (Diario_x_Categoria) ---------- */
+const BULK_CAT_MAP = {Smartphones:'SP', Tab:'Tab', Wearables:'WR', Earphones:'AUD'};
+
+async function handleBulkFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const preview = document.getElementById('bulkPreview');
+  if(preview) preview.innerHTML = `<div class="footer-note">Leyendo archivo...</div>`;
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const sheetName = wb.SheetNames.find(n=> n.toLowerCase().replace(/\s/g,'').includes('diario_x_categoria'))
+      || wb.SheetNames.find(n=> n.toLowerCase().includes('diario'));
+    if(!sheetName){
+      if(preview) preview.innerHTML = `<div class="footer-note" style="color:var(--red);">No encontré una pestaña "Diario_x_Categoria" en este archivo.</div>`;
+      return;
+    }
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, raw:true});
+    const headerRowIdx = rows.findIndex(r=> r && r[0]==='Canal');
+    if(headerRowIdx===-1){
+      if(preview) preview.innerHTML = `<div class="footer-note" style="color:var(--red);">No reconocí el formato de encabezados de esta hoja.</div>`;
+      return;
+    }
+    const header = rows[headerRowIdx];
+    const dayCols = [];
+    for(let c=3; c<header.length; c++){
+      const h = String(header[c]||'');
+      const m = h.match(/^(\d{1,2})-/);
+      if(m) dayCols.push({col:c, day: Number(m[1])});
+    }
+    const storeByNorm = {};
+    STORES.forEach(s=> storeByNorm[normalize(s.store)] = s);
+
+    const agg = {};
+    const unmatched = new Set();
+    let skippedUnits = 0;
+    for(let r=headerRowIdx+1; r<rows.length; r++){
+      const row = rows[r];
+      if(!row || !row[1]) continue;
+      const storeName = String(row[1]);
+      const catLabel = String(row[2]||'');
+      const catCode = BULK_CAT_MAP[catLabel];
+      const store = storeByNorm[normalize(storeName)];
+      if(!store){ unmatched.add(storeName); continue; }
+      dayCols.forEach(dc=>{
+        const v = Number(row[dc.col])||0;
+        if(v<=0) return;
+        if(!catCode){ skippedUnits += v; return; }
+        const iso = `${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-${pad(dc.day)}`;
+        if(!agg[store.code]) agg[store.code] = {};
+        if(!agg[store.code][iso]) agg[store.code][iso] = {SP:0,Tab:0,WR:0,AUD:0};
+        agg[store.code][iso][catCode] += v;
+      });
+    }
+    bulkParsedAgg = agg; bulkUnmatched = [...unmatched]; bulkSkippedUnits = skippedUnits;
+    renderBulkPreview();
+  }catch(err){
+    if(preview) preview.innerHTML = `<div class="footer-note" style="color:var(--red);">Error leyendo el archivo: ${escapeHtml(String(err))}</div>`;
+  }
+}
+
+function renderBulkPreview(){
+  const preview = document.getElementById('bulkPreview');
+  if(!preview) return;
+  if(!bulkParsedAgg){ preview.innerHTML=''; return; }
+  const storeCount = Object.keys(bulkParsedAgg).length;
+  let dayCount = 0, totalUnits = 0;
+  Object.values(bulkParsedAgg).forEach(byDate=>{
+    Object.values(byDate).forEach(cats=>{
+      dayCount++;
+      totalUnits += CAT_ORDER.reduce((a,c)=>a+numOr0(cats[c]),0);
+    });
+  });
+  preview.innerHTML = `
+    <div style="margin-top:12px;padding:12px;background:var(--surface-2);border-radius:12px;font-size:12.5px;line-height:1.5;">
+      <div><b>${storeCount}</b> tiendas reconocidas · <b>${dayCount}</b> registros tienda-día · <b>${fmt(totalUnits)}</b> unidades a cargar</div>
+      ${bulkSkippedUnits>0 ? `<div style="color:var(--amber);margin-top:6px;">⚠️ ${fmt(bulkSkippedUnits)} unidades de "Other"/"Home" no se cargaron — no tienen categoría equivalente en la app.</div>` : ''}
+      ${bulkUnmatched.length ? `<div style="color:var(--red);margin-top:6px;">⚠️ ${bulkUnmatched.length} tiendas del archivo no se reconocieron: ${bulkUnmatched.slice(0,8).map(escapeHtml).join(', ')}${bulkUnmatched.length>8?'…':''}</div>` : ''}
+    </div>
+    <button class="primary" id="bulkConfirmBtn" style="margin-top:12px;">Confirmar y cargar ${fmt(totalUnits)} unidades</button>
+    <div id="bulkProgress" class="footer-note" style="padding-top:10px;"></div>
+  `;
+  document.getElementById('bulkConfirmBtn').addEventListener('click', runBulkUpload);
+}
+
+/* Reparte la venta oficial de un día entre los roles reales de la tienda:
+   - Tiendas de 1 solo promotor: todo va a ese único rol, sin dividir.
+   - Tiendas con especialista de Tablets: el 100% de Tablets va para él;
+     Smartphones/Wearables/Audio se reparten en partes iguales entre el
+     resto de promotores.
+   - Tiendas con varios promotores "generales" (sin especialista): las 4
+     categorías se reparten en partes iguales entre todos ellos. */
+function splitCatsAcrossRoles(store, cats){
+  const roles = storeRoles(store);
+  if(roles.length<=1){
+    return [{ roleKey: roles[0] ? roles[0].key : 'P1', cats }];
+  }
+  const tabRole = roles.find(r=>r.key==='TAB');
+  const generalRoles = roles.filter(r=>r.key!=='TAB');
+  const n = Math.max(1, generalRoles.length);
+  const jobs = [];
+  if(tabRole){
+    if(numOr0(cats.Tab) > 0){
+      jobs.push({ roleKey: tabRole.key, cats: {SP:0, Tab:cats.Tab, WR:0, AUD:0} });
+    }
+    generalRoles.forEach(r=>{
+      jobs.push({ roleKey: r.key, cats: {SP:numOr0(cats.SP)/n, Tab:0, WR:numOr0(cats.WR)/n, AUD:numOr0(cats.AUD)/n} });
+    });
+  } else {
+    generalRoles.forEach(r=>{
+      jobs.push({ roleKey: r.key, cats: {
+        SP:numOr0(cats.SP)/n, Tab:numOr0(cats.Tab)/n, WR:numOr0(cats.WR)/n, AUD:numOr0(cats.AUD)/n
+      }});
+    });
+  }
+  return jobs;
+}
+
+async function runBulkUpload(){
+  const btn = document.getElementById('bulkConfirmBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Cargando...'; }
+  const progressEl = document.getElementById('bulkProgress');
+  const jobs = [];
+  Object.entries(bulkParsedAgg).forEach(([code, byDate])=>{
+    const store = STORES.find(s=>s.code===code);
+    Object.entries(byDate).forEach(([iso, cats])=>{
+      splitCatsAcrossRoles(store, cats).forEach(j=> jobs.push({code, iso, roleKey:j.roleKey, cats:j.cats}));
+    });
+  });
+  let done = 0, failed = 0;
+  for(const job of jobs){
+    const ok = await saveEntry(job.code, job.iso, job.roleKey, job.cats);
+    if(!ok) failed++;
+    done++;
+    if(progressEl) progressEl.textContent = `Cargando ${done}/${jobs.length}...${failed?` (${failed} con error)`:''}`;
+  }
+  showToast(failed ? `Carga terminada con ${failed} error(es) de ${jobs.length}` : 'Carga masiva completada ✓');
+  bulkParsedAgg = null; bulkUnmatched = []; bulkSkippedUnits = 0;
+  renderAdmin();
 }
 
 /* ---------- helpers de gráficos SVG (sin librerías externas) ---------- */
