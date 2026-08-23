@@ -460,7 +460,10 @@ let adminViewMode = 'month'; // 'month' | 'week' — vista del resumen de superv
 let adminTab = 'cumplimiento'; // 'cumplimiento' | 'categoria' | 'carga' | 'reporte'
 let adminLoadDate = null; // fecha seleccionada en la pestaña "Carga de hoy" (default: hoy)
 let cumplFilter = null; // null = todos; si no, Set de 'yes'|'no' (multi-select, tab Cumplimiento)
+let zeroFilter = null; // null = sin filtro; si no, Set de 'general'|'SP'|'Tab'|'WR'|'AUD' (multi-select, tab Cumplimiento)
 let cargaFilter = null; // null = todos; si no, Set de 'full'|'partial'|'none' (multi-select, tab Carga de hoy)
+let supFilter = null; // null = todos; si no, Set de 'zero'|'incomplete' (multi-select, tab Por supervisor)
+let expandedSupNames = new Set(); // supervisores con la lista de tiendas en 0 desplegada
 let cargarVentaStoreCode = null; // tienda seleccionada en la pestaña "Cargar venta" (solo admin)
 let cargarVentaRole = null;
 let cvComboTerm = '';
@@ -1152,14 +1155,18 @@ async function renderAdmin(){
       <span class="filter-chip ${adminTab==='categoria'?'active':''}" data-tab="categoria">Por categoría</span>
       <span class="filter-chip ${adminTab==='carga'?'active':''}" data-tab="carga">Carga de hoy</span>
       <span class="filter-chip ${adminTab==='reporte'?'active':''}" data-tab="reporte">Reporte</span>
+      ${scope===null ? `<span class="filter-chip ${adminTab==='porsupervisor'?'active':''}" data-tab="porsupervisor">Por supervisor</span>` : ``}
       ${scope===null ? `<span class="filter-chip ${adminTab==='cargarventa'?'active':''}" data-tab="cargarventa">Cargar venta</span>` : ``}
     </div>`;
+
+  if(adminTab==='porsupervisor' && scope!==null) adminTab = 'cumplimiento';
 
   let bodyHtml = '';
   if(adminTab==='cumplimiento') bodyHtml = renderTabCumplimiento(byChannel, wNum, chipsHtml);
   else if(adminTab==='categoria') bodyHtml = renderTabCategoria(byChannel);
   else if(adminTab==='carga') bodyHtml = renderTabCarga(byChannel, chipsHtml);
   else if(adminTab==='reporte') bodyHtml = renderTabReporte(byChannel, chipsHtml);
+  else if(adminTab==='porsupervisor' && scope===null) bodyHtml = renderTabPorSupervisor(byChannel, wNum, chipsHtml);
   else if(adminTab==='cargarventa' && scope===null) bodyHtml = renderTabCargarVenta(all);
 
   app.innerHTML = `
@@ -1190,7 +1197,14 @@ async function renderAdmin(){
     });
   });
   document.querySelectorAll('.admin-row-click').forEach(row=>{
-    row.addEventListener('click', ()=> openStoreDetail(row.dataset.code));
+    row.addEventListener('click', (e)=>{ e.stopPropagation(); openStoreDetail(row.dataset.code); });
+  });
+  document.querySelectorAll('.sup-row-click').forEach(row=>{
+    row.addEventListener('click', ()=>{
+      const name = row.dataset.sup;
+      if(expandedSupNames.has(name)) expandedSupNames.delete(name); else expandedSupNames.add(name);
+      renderAdmin();
+    });
   });
   if(adminTab==='cumplimiento'){
     document.querySelectorAll('#modeToggle .filter-chip').forEach(chip=>{
@@ -1198,6 +1212,9 @@ async function renderAdmin(){
     });
     document.querySelectorAll('.cumpl-stat-click').forEach(box=>{
       box.addEventListener('click', ()=>{ cumplFilter = toggleMulti(cumplFilter, box.dataset.val); renderAdmin(); });
+    });
+    document.querySelectorAll('.zero-stat-click').forEach(box=>{
+      box.addEventListener('click', ()=>{ zeroFilter = toggleMulti(zeroFilter, box.dataset.val); renderAdmin(); });
     });
     const dlBtn = document.getElementById('downloadXlsxCumpl');
     if(dlBtn) dlBtn.addEventListener('click', ()=> downloadCumplimientoXlsx(byChannel, adminViewMode, wNum));
@@ -1225,9 +1242,131 @@ async function renderAdmin(){
     const dlBtn = document.getElementById('downloadXlsxCarga');
     if(dlBtn) dlBtn.addEventListener('click', ()=> downloadCargaXlsx(byChannel, adminLoadDate || todayISO()));
   }
+  if(adminTab==='porsupervisor' && scope===null){
+    document.querySelectorAll('#modeToggle .filter-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{ adminViewMode = chip.dataset.mode; renderAdmin(); });
+    });
+    const dateInp = document.getElementById('supLoadDateInput');
+    if(dateInp) dateInp.addEventListener('change', (e)=>{ adminLoadDate = e.target.value; renderAdmin(); });
+    document.querySelectorAll('.sup-stat-click').forEach(box=>{
+      box.addEventListener('click', ()=>{ supFilter = toggleMulti(supFilter, box.dataset.val); renderAdmin(); });
+    });
+    const dlBtn = document.getElementById('downloadXlsxPorSupervisor');
+    if(dlBtn) dlBtn.addEventListener('click', ()=> downloadPorSupervisorXlsx(byChannel, adminViewMode, adminLoadDate || todayISO()));
+  }
   if(adminTab==='cargarventa' && scope===null){
     bindCargarVentaTab();
   }
+}
+
+/* ---------- TAB: Por supervisor (solo admin) ---------- */
+function renderTabPorSupervisor(byChannel, wNum, chipsHtml){
+  if(!adminLoadDate) adminLoadDate = todayISO();
+  const isWeek = adminViewMode==='week';
+  const soldKey = isWeek ? 'weekSold' : 'totalSold';
+  const targetKey = isWeek ? 'weekTarget' : 'target';
+
+  const bySup = {};
+  byChannel.forEach(r=>{
+    const key = r.supervisor || 'Sin supervisor';
+    if(!bySup[key]) bySup[key] = { count:0, sold:0, target:0, loadedToday:0, zeroCount:0, zeroStores:[] };
+    const g = bySup[key];
+    g.count++;
+    g.sold += numOr0(r[soldKey]);
+    g.target += numOr0(r[targetKey]);
+    if(numOr0(r[soldKey])===0){ g.zeroCount++; g.zeroStores.push({code:r.code, store:r.store}); }
+    const norm = normalizedEntries(r.salesMap);
+    const found = norm.find(([iso])=>iso===adminLoadDate);
+    const dayEntry = found ? found[1] : null;
+    const loadedRoles = dayEntry ? dayPromoterEntries(dayEntry).filter(([,cats])=> CAT_ORDER.some(c=>Number(cats[c])>0)).map(([k])=>k) : [];
+    if(loadedRoles.length >= r.roles.length) g.loadedToday++;
+  });
+
+  const allRows = Object.entries(bySup).map(([name,g])=>({
+    name, count:g.count, sold:g.sold, target:g.target,
+    pct: g.target>0 ? Math.round(g.sold/g.target*100) : 0,
+    loadedToday:g.loadedToday, zeroCount:g.zeroCount, zeroStores:g.zeroStores
+  })).sort((a,b)=> a.pct-b.pct);
+
+  const withZero = allRows.filter(r=>r.zeroCount>0).length;
+  const withIncomplete = allRows.filter(r=>r.loadedToday<r.count).length;
+
+  const rows = supFilter===null ? allRows : allRows.filter(r=>{
+    return (supFilter.has('zero') && r.zeroCount>0) || (supFilter.has('incomplete') && r.loadedToday<r.count);
+  });
+
+  const rowsHtml = rows.map(r=>{
+    const color = r.pct>=100 ? 'var(--green)' : (r.pct>=85 ? 'var(--ink)' : 'var(--red)');
+    const isOpen = expandedSupNames.has(r.name);
+    const zeroListHtml = (isOpen && r.zeroCount>0) ? `
+      <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);">
+        ${r.zeroStores.map(s=>`<div class="admin-row-click" data-code="${s.code}" style="padding:6px 4px;font-size:12.5px;color:var(--red);cursor:pointer;">${escapeHtml(s.store)} <span class="chev">›</span></div>`).join('')}
+      </div>` : '';
+    return `<div class="admin-row sup-row-click" data-sup="${escapeHtml(r.name)}" style="align-items:flex-start;flex-direction:column;cursor:pointer;">
+      <div style="display:flex;width:100%;align-items:flex-start;">
+        <div class="an">
+          <div class="n">${escapeHtml(r.name)}</div>
+          <div class="s">${r.count} tienda${r.count!==1?'s':''} · ${fmt(r.sold)}/${fmt(r.target)} u.</div>
+          <div class="cat-mini">
+            Cargaron hoy <b style="color:${r.loadedToday>=r.count?'var(--green)':'var(--amber)'}">${r.loadedToday}/${r.count}</b>
+            &nbsp;·&nbsp; 0 ventas <b style="color:${r.zeroCount>0?'var(--red)':'var(--green)'}">${r.zeroCount}</b>
+            ${r.zeroCount>0 ? `<span class="chev">${isOpen?'▾':'›'}</span>` : ''}
+          </div>
+        </div>
+        <div class="ap" style="color:${color}">${r.pct}%</div>
+      </div>
+      ${zeroListHtml}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="section" style="padding-top:10px;padding-bottom:0;">
+    <div class="cat-toggle" id="modeToggle">
+      <span class="filter-chip ${adminViewMode==='month'?'active':''}" data-mode="month">General (mes)</span>
+      <span class="filter-chip ${adminViewMode==='week'?'active':''}" data-mode="week">Semana ${wNum}</span>
+    </div>
+    <label class="fieldlabel" style="margin-top:10px;">Fecha para "cargaron hoy"</label>
+    <input type="date" id="supLoadDateInput" value="${adminLoadDate}" min="${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-01" max="${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-${pad(DAYS_IN_MONTH)}"/>
+  </div>
+  <div class="admin-summary-band">
+    <div class="stat sup-stat-click" data-val="incomplete" style="flex:1;background:var(--amber-bg);cursor:pointer;${supFilter&&supFilter.has('incomplete')?'outline:2px solid var(--amber);':''}"><div class="v" style="color:var(--amber)">${withIncomplete}</div><div class="l">Con carga incompleta hoy</div></div>
+    <div class="stat sup-stat-click" data-val="zero" style="flex:1;background:var(--red-bg);cursor:pointer;${supFilter&&supFilter.has('zero')?'outline:2px solid var(--red);':''}"><div class="v" style="color:var(--red)">${withZero}</div><div class="l">Con alguna tienda en 0</div></div>
+  </div>
+  <div class="section" style="padding-top:6px;">
+    <div class="adminChannelChips" style="margin-bottom:6px;">${chipsHtml}</div>
+    <div class="card" style="padding:8px 14px;">
+      ${rowsHtml || '<div class="empty-msg">Sin datos para este filtro.</div>'}
+    </div>
+    <button class="primary" id="downloadXlsxPorSupervisor" style="margin-top:12px;">Descargar Excel de esta vista</button>
+    <div class="footer-note">Toca un supervisor para ver cuáles de sus tiendas están en 0. Toca los contadores de arriba para filtrar (combinable).</div>
+  </div>`;
+}
+
+function downloadPorSupervisorXlsx(byChannel, mode, dateIso){
+  const isWeek = mode==='week';
+  const soldKey = isWeek ? 'weekSold' : 'totalSold';
+  const targetKey = isWeek ? 'weekTarget' : 'target';
+  const bySup = {};
+  byChannel.forEach(r=>{
+    const key = r.supervisor || 'Sin supervisor';
+    if(!bySup[key]) bySup[key] = { count:0, sold:0, target:0, loadedToday:0, zeroCount:0 };
+    const g = bySup[key];
+    g.count++;
+    g.sold += numOr0(r[soldKey]);
+    g.target += numOr0(r[targetKey]);
+    if(numOr0(r[soldKey])===0) g.zeroCount++;
+    const norm = normalizedEntries(r.salesMap);
+    const found = norm.find(([iso])=>iso===dateIso);
+    const dayEntry = found ? found[1] : null;
+    const loadedRoles = dayEntry ? dayPromoterEntries(dayEntry).filter(([,cats])=> CAT_ORDER.some(c=>Number(cats[c])>0)).map(([k])=>k) : [];
+    if(loadedRoles.length >= r.roles.length) g.loadedToday++;
+  });
+  const aoa = [['Supervisor','Tiendas','Vendido','Target','% Cumplimiento','Cargaron hoy','Tiendas en 0']];
+  Object.entries(bySup).sort((a,b)=> a[0].localeCompare(b[0],'es')).forEach(([name,g])=>{
+    const pct = g.target>0 ? Math.round(g.sold/g.target*100) : 0;
+    aoa.push([name, g.count, g.sold, g.target, pct+'%', `${g.loadedToday}/${g.count}`, g.zeroCount]);
+  });
+  exportExcel(`cumplimiento_por_supervisor_${mode}_${todayISO()}.xlsx`, [{name:'Por supervisor', aoa}]);
 }
 
 /* ---------- TAB: Cargar venta oficial (solo admin, cualquier punto de venta) ---------- */
@@ -1601,11 +1740,24 @@ function renderTabCumplimiento(byChannel, wNum, chipsHtml){
   const overallPct = totalTarget>0 ? Math.round(totalSoldAll/totalTarget*100) : 0;
   const cumpliendoList = sorted.filter(r=>r[pctKey]>=100);
   const noCumpliendoList = sorted.filter(r=>r[pctKey]<100);
+  const zeroGeneralList = sorted.filter(r=>numOr0(r[soldKey])===0);
 
-  const filtered = cumplFilter===null ? sorted : sorted.filter(r=>{
+  const catSoldOf = (r,c)=> isWeek ? r.soldByCatWeek[c] : r.soldByCatMonth[c];
+  const zeroCatCount = {};
+  CAT_ORDER.forEach(c=> zeroCatCount[c] = sorted.filter(r=>numOr0(catSoldOf(r,c))===0).length);
+
+  let filtered = cumplFilter===null ? sorted : sorted.filter(r=>{
     const isCumpl = r[pctKey]>=100;
     return (cumplFilter.has('yes') && isCumpl) || (cumplFilter.has('no') && !isCumpl);
   });
+  if(zeroFilter!==null){
+    filtered = filtered.filter(r=>{
+      return [...zeroFilter].some(key=>{
+        if(key==='general') return numOr0(r[soldKey])===0;
+        return numOr0(catSoldOf(r,key))===0;
+      });
+    });
+  }
 
   const chartItems = sorted.slice(0,8).map(r=>({label: r.store.length>16?r.store.slice(0,15)+'…':r.store, value: r[soldKey], max: Math.max(r[targetKey],1), color: r[pctKey]>=100?'#157F49':'#C7000B'}));
 
@@ -1622,13 +1774,16 @@ function renderTabCumplimiento(byChannel, wNum, chipsHtml){
     const catLine = CAT_ORDER.map(c=>{
       const t = Math.max(0, tgt[c]||0);
       const p = t>0 ? Math.round(sold[c]/t*100) : (sold[c]>0?100:0);
-      return `${CAT_LABEL[c]} <b style="color:${p>=100?'var(--green)':'var(--ink)'}">${p}%</b>`;
+      const isZero = numOr0(sold[c])===0;
+      return `${CAT_LABEL[c]} <b style="color:${isZero?'var(--red)':(p>=100?'var(--green)':'var(--ink)')}">${isZero?'0':p+'%'}</b>`;
     }).join(' · ');
     return `<div class="admin-row admin-row-click" style="align-items:flex-start;" data-code="${r.code}">
       <div class="an"><div class="n">${escapeHtml(r.store)}</div><div class="s">${r.code} · ${escapeHtml(r.supervisor||'')} · ${fmt(r[soldKey])}/${fmt(r[targetKey])}</div><div class="cat-mini">${catLine}</div>${roleLine}</div>
       <div class="ap" style="color:${color}">${Math.round(pct)}% <span class="chev">›</span></div>
     </div>`;
   }).join('');
+
+  const zeroChip = (key,label,count)=> `<span class="filter-chip zero-stat-click" data-val="${key}" style="${zeroFilter&&zeroFilter.has(key)?'background:var(--red);color:#fff;':''}">0 ${label} (${count})</span>`;
 
   return `
   <div class="section" style="padding-top:10px;padding-bottom:0;">
@@ -1645,6 +1800,13 @@ function renderTabCumplimiento(byChannel, wNum, chipsHtml){
   <div class="admin-summary-band" style="padding-top:0;">
     <div class="stat cumpl-stat-click" data-val="yes" style="flex:1;background:var(--green-bg);cursor:pointer;${cumplFilter&&cumplFilter.has('yes')?'outline:2px solid var(--green);':''}"><div class="v" style="color:var(--green)">${cumpliendoList.length}</div><div class="l">Puntos cumpliendo</div></div>
     <div class="stat cumpl-stat-click" data-val="no" style="flex:1;background:var(--red-bg);cursor:pointer;${cumplFilter&&cumplFilter.has('no')?'outline:2px solid var(--red);':''}"><div class="v" style="color:var(--red)">${noCumpliendoList.length}</div><div class="l">Puntos sin cumplir</div></div>
+  </div>
+  <div class="section" style="padding-top:10px;padding-bottom:0;">
+    <div class="label-eyebrow">Reportaron 0 ventas — toca para filtrar (combinable)</div>
+    <div class="cat-toggle">
+      ${zeroChip('general','general',zeroGeneralList.length)}
+      ${CAT_ORDER.map(c=>zeroChip(c, CAT_LABEL[c], zeroCatCount[c])).join('')}
+    </div>
   </div>
   <div class="section" style="padding-top:6px;">
     <div class="adminChannelChips" style="margin-bottom:6px;">${chipsHtml}</div>
