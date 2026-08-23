@@ -462,6 +462,7 @@ let adminLoadDate = null; // fecha seleccionada en la pestaña "Carga de hoy" (d
 let cumplFilter = null; // null = todos; si no, Set de 'yes'|'no' (multi-select, tab Cumplimiento)
 let zeroFilter = null; // null = sin filtro; si no, Set de 'general'|'SP'|'Tab'|'WR'|'AUD' (multi-select, tab Cumplimiento)
 let cargaFilter = null; // null = todos; si no, Set de 'full'|'partial'|'none' (multi-select, tab Carga de hoy)
+let zeroDiaFilter = null; // null = sin filtro; si no, Set de 'general'|'SP'|'Tab'|'WR'|'AUD' (0 ventas del día específico, tab Carga de hoy)
 let supFilter = null; // null = todos; si no, Set de 'zero'|'incomplete' (multi-select, tab Por supervisor)
 let expandedSupNames = new Set(); // supervisores con la lista de tiendas en 0 desplegada
 let cargarVentaStoreCode = null; // tienda seleccionada en la pestaña "Cargar venta" (solo admin)
@@ -1239,6 +1240,9 @@ async function renderAdmin(){
     document.querySelectorAll('.carga-stat-click').forEach(box=>{
       box.addEventListener('click', ()=>{ cargaFilter = toggleMulti(cargaFilter, box.dataset.val); renderAdmin(); });
     });
+    document.querySelectorAll('.zero-dia-click').forEach(box=>{
+      box.addEventListener('click', ()=>{ zeroDiaFilter = toggleMulti(zeroDiaFilter, box.dataset.val); renderAdmin(); });
+    });
     const dlBtn = document.getElementById('downloadXlsxCarga');
     if(dlBtn) dlBtn.addEventListener('click', ()=> downloadCargaXlsx(byChannel, adminLoadDate || todayISO()));
   }
@@ -1877,7 +1881,9 @@ function renderTabCarga(byChannel, chipsHtml){
     const dayEntry = found ? found[1] : null;
     const loadedRoles = dayEntry ? dayPromoterEntries(dayEntry).filter(([,cats])=> CAT_ORDER.some(c=>Number(cats[c])>0)).map(([k])=>k) : [];
     const status = loadedRoles.length>=s.roles.length ? 'full' : (loadedRoles.length===0 ? 'none' : 'partial');
-    return { ...s, loadedCount: loadedRoles.length, totalRoles: s.roles.length, loadedRoleKeys: loadedRoles, status };
+    const dayCatVals = {}; CAT_ORDER.forEach(c=> dayCatVals[c] = dayCat(dayEntry, c));
+    const dayTotalVal = dayTotal(dayEntry);
+    return { ...s, loadedCount: loadedRoles.length, totalRoles: s.roles.length, loadedRoleKeys: loadedRoles, status, dayCatVals, dayTotalVal };
   }).sort((a,b)=>{
     const order = {none:0, partial:1, full:2};
     return order[a.status]-order[b.status];
@@ -1887,7 +1893,23 @@ function renderTabCarga(byChannel, chipsHtml){
   const none = rows.filter(r=>r.status==='none').length;
   const partial = rows.length - full - none;
 
-  const filtered = cargaFilter===null ? rows : rows.filter(r=>cargaFilter.has(r.status));
+  // "0 ventas del día" — entre las tiendas que SÍ cargaron algo ese día (full o partial),
+  // cuáles quedaron en 0 en el total o en alguna categoría específica.
+  const activeToday = rows.filter(r=>r.status!=='none');
+  const zeroTotalToday = activeToday.filter(r=>numOr0(r.dayTotalVal)===0).length;
+  const zeroCatToday = {};
+  CAT_ORDER.forEach(c=> zeroCatToday[c] = activeToday.filter(r=>numOr0(r.dayCatVals[c])===0).length);
+
+  let filtered = cargaFilter===null ? rows : rows.filter(r=>cargaFilter.has(r.status));
+  if(zeroDiaFilter!==null){
+    filtered = filtered.filter(r=>{
+      if(r.status==='none') return false; // "0 del día" solo aplica a quien cargó algo
+      return [...zeroDiaFilter].some(key=>{
+        if(key==='general') return numOr0(r.dayTotalVal)===0;
+        return numOr0(r.dayCatVals[key])===0;
+      });
+    });
+  }
 
   const rowsHtml = filtered.map(r=>{
     let badge, color;
@@ -1899,13 +1921,21 @@ function renderTabCarga(byChannel, chipsHtml){
       const missing = r.roles.filter(role=>!r.loadedRoleKeys.includes(role.key)).map(role=>role.label);
       missingLine = `<div class="s" style="margin-top:2px;color:var(--red);">Falta: ${missing.join(', ')}</div>`;
     }
+    let catLine = '';
+    if(r.status!=='none'){
+      catLine = `<div class="cat-mini">${CAT_ORDER.map(c=>{
+        const v = numOr0(r.dayCatVals[c]);
+        return `${CAT_LABEL[c]} <b style="color:${v===0?'var(--red)':'var(--ink)'}">${v}</b>`;
+      }).join(' · ')}</div>`;
+    }
     return `<div class="admin-row admin-row-click" style="align-items:flex-start;" data-code="${r.code}">
-      <div class="an"><div class="n">${escapeHtml(r.store)}</div><div class="s">${r.code} · ${escapeHtml(r.supervisor||'')}</div>${missingLine}</div>
+      <div class="an"><div class="n">${escapeHtml(r.store)}</div><div class="s">${r.code} · ${escapeHtml(r.supervisor||'')}</div>${catLine}${missingLine}</div>
       <div class="ap" style="color:${color};font-size:12px;">${badge} <span class="chev">›</span></div>
     </div>`;
   }).join('');
 
   const outline = (key)=> cargaFilter && cargaFilter.has(key) ? 'outline:2px solid currentColor;' : '';
+  const zeroDiaChip = (key,label,count)=> `<span class="filter-chip zero-dia-click" data-val="${key}" style="${zeroDiaFilter&&zeroDiaFilter.has(key)?'background:var(--red);color:#fff;':''}">0 ${label} hoy (${count})</span>`;
 
   return `
   <div class="section" style="padding-top:10px;padding-bottom:0;">
@@ -1916,6 +1946,13 @@ function renderTabCarga(byChannel, chipsHtml){
     <div class="stat carga-stat-click" data-val="full" style="flex:1;background:var(--green-bg);color:var(--green);cursor:pointer;${outline('full')}"><div class="v" style="color:var(--green)">${full}</div><div class="l">Cargaron completo</div></div>
     <div class="stat carga-stat-click" data-val="partial" style="flex:1;background:var(--amber-bg);color:var(--amber);cursor:pointer;${outline('partial')}"><div class="v" style="color:var(--amber)">${partial}</div><div class="l">Carga parcial</div></div>
     <div class="stat carga-stat-click" data-val="none" style="flex:1;background:var(--red-bg);color:var(--red);cursor:pointer;${outline('none')}"><div class="v" style="color:var(--red)">${none}</div><div class="l">Sin cargar</div></div>
+  </div>
+  <div class="section" style="padding-top:10px;padding-bottom:0;">
+    <div class="label-eyebrow">De quienes cargaron, reportaron 0 ese día — toca para filtrar</div>
+    <div class="cat-toggle">
+      ${zeroDiaChip('general','general',zeroTotalToday)}
+      ${CAT_ORDER.map(c=>zeroDiaChip(c, CAT_LABEL[c], zeroCatToday[c])).join('')}
+    </div>
   </div>
   <div class="section" style="padding-top:6px;">
     <div class="adminChannelChips" style="margin-bottom:6px;">${chipsHtml}</div>
@@ -2012,7 +2049,7 @@ function downloadCategoriaXlsx(byChannel, mode){
 }
 
 function downloadCargaXlsx(byChannel, dateIso){
-  const aoa = [['Tienda','Código','Supervisor','Estado','Promotores cargados','Total promotores','Roles faltantes']];
+  const aoa = [['Tienda','Código','Supervisor','Estado','Promotores cargados','Total promotores','Roles faltantes','SP','Tab','WR','AUD','Total del día']];
   byChannel.forEach(s=>{
     const norm = normalizedEntries(s.salesMap);
     const found = norm.find(([iso])=>iso===dateIso);
@@ -2020,7 +2057,8 @@ function downloadCargaXlsx(byChannel, dateIso){
     const loadedRoles = dayEntry ? dayPromoterEntries(dayEntry).filter(([,cats])=> CAT_ORDER.some(c=>Number(cats[c])>0)).map(([k])=>k) : [];
     const status = loadedRoles.length>=s.roles.length ? 'Completo' : (loadedRoles.length===0 ? 'Sin cargar' : 'Parcial');
     const missing = s.roles.filter(role=>!loadedRoles.includes(role.key)).map(role=>role.label).join(', ');
-    aoa.push([s.store, s.code, s.supervisor||'', status, loadedRoles.length, s.roles.length, missing]);
+    aoa.push([s.store, s.code, s.supervisor||'', status, loadedRoles.length, s.roles.length, missing,
+      dayCat(dayEntry,'SP'), dayCat(dayEntry,'Tab'), dayCat(dayEntry,'WR'), dayCat(dayEntry,'AUD'), dayTotal(dayEntry)]);
   });
   exportExcel(`carga_diaria_${dateIso}.xlsx`, [{name:'Carga de hoy', aoa}]);
 }
