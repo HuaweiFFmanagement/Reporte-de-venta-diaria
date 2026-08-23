@@ -388,6 +388,42 @@ function currentWeekNum(){
   return WEEKS[WEEKS.length-1].num;
 }
 
+/* Redistribuye lo que una tienda dejó de vender en semanas ya cerradas hacia
+   las semanas siguientes, manteniendo el % de peso original de cada semana
+   como base. Ej: si la semana 1 tenía meta 20 y vendió 5, esos 15 restantes
+   se reparten entre las semanas que faltan, proporcional a su peso original.
+   Los excedentes (vender de más) no le "restan" meta a las semanas futuras. */
+function computeAdjustedWeekTargets(store, entries){
+  const soldByWeek = {};
+  WEEKS.forEach(w=> soldByWeek[w.num] = 0);
+  entries.forEach(([iso,e])=>{
+    const wn = weekOfDate(iso);
+    if(wn) soldByWeek[wn] += dayTotal(e);
+  });
+  const adjusted = {};
+  WEEKS.forEach(w=> adjusted[w.num] = Math.max(0, store.w ? store.w[w.num-1] : (store.target/WEEKS.length)));
+  const now = new Date();
+  const isCurrentMonth = (now.getFullYear()===TARGET_YEAR && now.getMonth()===TARGET_MONTH);
+  for(const w of WEEKS){
+    const isClosed = isCurrentMonth ? (w.end < now) : true; // solo semanas que ya terminaron
+    if(!isClosed) break;
+    const sold = soldByWeek[w.num] || 0;
+    const deficit = Math.max(0, adjusted[w.num] - sold);
+    if(deficit > 0){
+      const futureWeeks = WEEKS.filter(fw=>fw.num > w.num);
+      if(futureWeeks.length>0){
+        const totalFutureWeight = futureWeeks.reduce((a,fw)=> a + Math.max(0, store.w?store.w[fw.num-1]:0), 0);
+        futureWeeks.forEach(fw=>{
+          const origWeight = Math.max(0, store.w?store.w[fw.num-1]:0);
+          const share = totalFutureWeight>0 ? (origWeight/totalFutureWeight) : (1/futureWeeks.length);
+          adjusted[fw.num] += deficit*share;
+        });
+      }
+    }
+  }
+  return adjusted;
+}
+
 /* ============ storage (Google Sheets vía Apps Script, JSONP) ============
    Usamos una etiqueta <script> en vez de fetch() para evitar por completo
    los problemas de CORS al conectar con Apps Script.                     */
@@ -899,20 +935,33 @@ async function renderDashboard(){
   if(!selectedRoleKey || !roles.find(r=>r.key===selectedRoleKey)) selectedRoleKey = roles[0].key;
   const activeRole = roles.find(r=>r.key===selectedRoleKey);
 
-  // -------- semana actual --------
+  // -------- semana actual (con redistribución de metas de semanas cerradas) --------
   const wNum = currentWeekNum();
-  const weekTarget = Math.max(0, currentStore.w ? currentStore.w[wNum-1] : (target/WEEKS.length));
+  const adjustedTargets = computeAdjustedWeekTargets(currentStore, entries);
+  const weekTarget = adjustedTargets[wNum];
   let weekSold = 0;
   entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===wNum) weekSold += dayTotal(e); });
   const pctWeek = weekTarget>0 ? (weekSold/weekTarget*100) : 0;
 
-  // -------- proyección: según días efectivamente cargados y días hábiles restantes --------
+  // -------- proyección: días efectivamente cargados, acotada a los días que realmente quedan en el mes --------
+  const now0 = new Date();
+  const isCurrentMonth0 = now0.getFullYear()===TARGET_YEAR && now0.getMonth()===TARGET_MONTH;
+  const calendarDaysRemaining = isCurrentMonth0 ? Math.max(0, DAYS_IN_MONTH - now0.getDate()) : 0;
   const daysWorked = entries.length;
   const dailyAvg = daysWorked>0 ? totalSold/daysWorked : 0;
-  const daysRemaining = Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked);
+  const daysRemaining = isCurrentMonth0
+    ? Math.min(calendarDaysRemaining, Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked))
+    : Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked);
   const projected = totalSold + dailyAvg*daysRemaining;
   const projectedPct = target>0 ? (projected/target*100) : 0;
   const st = statusFor(projectedPct);
+
+  // -------- reporte de hoy (para que el promotor tenga evidencia de que cargó) --------
+  const todayIsoStr = todayISO();
+  const todayFound = entries.find(([iso])=>iso===todayIsoStr);
+  const todayEntry = todayFound ? todayFound[1] : null;
+  const todayTotal = dayTotal(todayEntry);
+  const todayCatsSoldCount = CAT_ORDER.filter(c=>dayCat(todayEntry,c)>0).length;
 
   // -------- categorías (mes o semana según toggle) --------
   const soldByCatMonth = {SP:0,Tab:0,WR:0,AUD:0};
@@ -923,12 +972,29 @@ async function renderDashboard(){
   const targetByCatWeek = {};
   CAT_ORDER.forEach(c=> targetByCatWeek[c] = currentStore.cat_w && currentStore.cat_w[c] ? currentStore.cat_w[c][wNum-1] : 0);
 
-  // -------- todas las semanas --------
+  // -------- mensajes de retroalimentación --------
+  const feedbackMsgs = [];
+  if(!todayEntry){
+    feedbackMsgs.push({cls:'pill-amber', text:'Aún no has cargado tu venta de hoy.'});
+  } else if(todayCatsSoldCount>=3){
+    feedbackMsgs.push({cls:'pill-green', text:`¡Bien! Hoy vendiste en ${todayCatsSoldCount} categorías distintas.`});
+  } else if(todayCatsSoldCount===2){
+    feedbackMsgs.push({cls:'pill-amber', text:'Hoy vendiste en 2 categorías — aceptable, pero para ser integral intenta llegar a 3.'});
+  } else {
+    feedbackMsgs.push({cls:'pill-red', text:'Recuerda que para ser integral necesitas vender mínimo en 2-3 categorías cada día.'});
+  }
+  activeRole.cats.forEach(c=>{
+    if(numOr0(soldByCatWeek[c])===0){
+      feedbackMsgs.push({cls:'pill-red', text:`Aún no vendes ${CAT_LABEL[c]} esta semana.`});
+    }
+  });
+
+  // -------- todas las semanas (con metas ajustadas) --------
   const now = new Date();
   const isCurrentMonth = now.getFullYear()===TARGET_YEAR && now.getMonth()===TARGET_MONTH;
   let weekHtml = '';
   WEEKS.forEach(w=>{
-    const wt = Math.max(0, currentStore.w ? currentStore.w[w.num-1] : (target/WEEKS.length));
+    const wt = adjustedTargets[w.num];
     let wSold = 0;
     entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===w.num) wSold += dayTotal(e); });
     const wPct = wt>0 ? (wSold/wt*100) : 0;
@@ -963,6 +1029,17 @@ async function renderDashboard(){
   </div>
 
   <div class="section" style="padding-top:22px;">
+    <div class="card" style="border:2px solid ${todayEntry?'var(--green)':'var(--red)'};">
+      <div class="label-eyebrow" style="display:flex;justify-content:space-between;">
+        <span>Reporte de hoy · ${dateLabel(todayIsoStr)}</span>
+        <span style="color:${todayEntry?'var(--green)':'var(--red)'};font-weight:700;">${todayEntry?'✓ Cargado':'✗ Sin cargar'}</span>
+      </div>
+      ${todayEntry ? `
+        <div class="cat-mini" style="font-size:13px;margin-top:4px;">${CAT_ORDER.map(c=>`${CAT_LABEL[c]} <b style="color:${dayCat(todayEntry,c)>0?'var(--ink)':'var(--red)'}">${fmt(dayCat(todayEntry,c))}</b>`).join(' · ')}</div>
+        <div style="margin-top:8px;font-weight:800;font-family:'Poppins';font-size:20px;">${fmt(todayTotal)} <span style="font-size:12px;font-weight:600;color:var(--ink-soft);">unidades hoy</span></div>
+      ` : `<div style="font-size:13px;color:var(--red);margin-top:4px;">Aún no has registrado tu venta de hoy.</div>`}
+    </div>
+
     <div class="card quota-card">
       <div class="label-eyebrow" style="color:rgba(255,255,255,0.75);">Tu cuota · ${TARGET_MONTH_LABEL}</div>
       <div class="quota-main-row">
@@ -996,6 +1073,11 @@ async function renderDashboard(){
         <div class="stat"><div class="v">${fmt(dailyAvg)}</div><div class="l">Prom. x día</div></div>
         <div class="stat"><div class="v">${fmt(projected)}</div><div class="l">Proy. cierre mes</div></div>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="label-eyebrow">Retroalimentación</div>
+      ${feedbackMsgs.map(m=>`<div class="status-pill ${m.cls}" style="display:block;margin-bottom:8px;text-align:left;">${m.text}</div>`).join('')}
     </div>
 
     <div class="card">
@@ -1099,10 +1181,16 @@ function computeStoreStats(s, all, wNum){
   const pctMonth = s.target>0 ? (totalSold/s.target*100) : 0;
   const daysWorked = entries.length;
   const dailyAvg = daysWorked>0 ? totalSold/daysWorked : 0;
-  const daysRemaining = Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked);
+  const now0 = new Date();
+  const isCurrentMonth0 = now0.getFullYear()===TARGET_YEAR && now0.getMonth()===TARGET_MONTH;
+  const calendarDaysRemaining = isCurrentMonth0 ? Math.max(0, DAYS_IN_MONTH - now0.getDate()) : 0;
+  const daysRemaining = isCurrentMonth0
+    ? Math.min(calendarDaysRemaining, Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked))
+    : Math.max(0, WORKING_DAYS_PER_MONTH - daysWorked);
   const projectedPct = s.target>0 ? ((totalSold + dailyAvg*daysRemaining)/s.target*100) : 0;
 
-  const weekTarget = Math.max(0, s.w ? s.w[wNum-1] : (s.target/WEEKS.length));
+  const adjustedTargets = computeAdjustedWeekTargets(s, entries);
+  const weekTarget = adjustedTargets[wNum];
   let weekSold = 0;
   entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===wNum) weekSold += dayTotal(e); });
   const pctWeek = weekTarget>0 ? (weekSold/weekTarget*100) : 0;
@@ -1117,7 +1205,7 @@ function computeStoreStats(s, all, wNum){
 
   const roles = storeRoles(s);
 
-  return {...s, totalSold, pctMonth, projectedPct, weekTarget, weekSold, pctWeek,
+  return {...s, totalSold, pctMonth, projectedPct, weekTarget, weekSold, pctWeek, adjustedTargets,
     soldByCatMonth, soldByCatWeek, targetByCatMonth, targetByCatWeek, roles, salesMap, entries};
 }
 
@@ -2123,7 +2211,7 @@ async function renderStoreDetail(code){
   const isCurrentMonth = now.getFullYear()===TARGET_YEAR && now.getMonth()===TARGET_MONTH;
   let weekHtml = '';
   WEEKS.forEach(w=>{
-    const wt = Math.max(0, store.w ? store.w[w.num-1] : (store.target/WEEKS.length));
+    const wt = stat.adjustedTargets[w.num];
     let wSold = 0;
     stat.entries.forEach(([iso,e])=>{ if(weekOfDate(iso)===w.num) wSold += dayTotal(e); });
     const wPct = wt>0 ? (wSold/wt*100) : 0;
