@@ -1656,7 +1656,8 @@ async function handleBulkFile(e){
     const dayCols = [];
     for(let c=3; c<header.length; c++){
       const h = String(header[c]||'');
-      const m = h.match(/^(\d{1,2})-/);
+      // acepta "01-Aug" o con día de la semana adelante, como "Mon 17-Aug"
+      const m = h.match(/(\d{1,2})-[A-Za-z]{3}/);
       if(m) dayCols.push({col:c, day: Number(m[1])});
     }
     const storeByNorm = {};
