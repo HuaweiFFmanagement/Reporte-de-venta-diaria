@@ -3,8 +3,8 @@
   completa) y que siempre cargue la versión más reciente cuando hay internet,
   mostrando la última versión guardada si el promotor se queda sin conexión.
 */
-const CACHE_NAME = 'cumplimiento-ff-v1'; // sube este número cada vez que cambies el HTML, para forzar la actualización
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'cumplimiento-ff-v3'; // sube este número cada vez que cambies el HTML, para forzar la actualización
+const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './benchmark.html'];
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

@@ -192,6 +192,7 @@ button.ghost{
 .day-box{width:15.6%;aspect-ratio:1;min-width:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
 .day-loaded{background:var(--green-bg);color:var(--green);}
 .day-missing{background:var(--red-bg);color:var(--red);}
+.day-pending{background:var(--amber-bg);color:var(--amber);}
 .day-future{background:var(--surface-2);color:var(--ink-soft);font-weight:500;}
 .day-legend{display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--ink-soft);}
 .day-legend span{display:inline-flex;align-items:center;gap:6px;}
@@ -424,6 +425,77 @@ function computeAdjustedWeekTargets(store, entries){
   return adjusted;
 }
 
+/* ============ regla de gracia (3 días para cargar una venta atrasada) ============ */
+const CARGA_GRACE_DAYS = 3;
+function daysAgoFrom(iso, refDate){
+  const [y,m,d] = iso.split('-').map(Number);
+  const dt = new Date(y,m-1,d);
+  return Math.round((refDate - dt)/86400000);
+}
+/* Estado de un día sin carga: 'pending' = aún dentro del plazo de 3 días para cargarlo,
+   'missing' = ya venció el plazo sin que se cargara. */
+function graceStatus(iso, refDate){
+  const ago = daysAgoFrom(iso, refDate);
+  if(ago <= CARGA_GRACE_DAYS) return 'pending';
+  return 'missing';
+}
+
+/* ============ rachas ============ */
+/* Cuenta días consecutivos (calendario) cumpliendo una condición, empezando
+   desde hoy hacia atrás. Los días sin carga que todavía están dentro del
+   plazo de 3 días se saltan sin romper la racha (todavía puede cargarlos);
+   un día con carga que no cumple la condición, o un día sin carga cuyo
+   plazo ya venció, sí la rompe. */
+function computeStreak(entries, conditionFn){
+  const entryMap = {};
+  entries.forEach(([iso,e])=> entryMap[iso]=e);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const monthStart = `${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-01`;
+  let streak = 0;
+  let cursor = new Date(today);
+  while(true){
+    const iso = `${cursor.getFullYear()}-${pad(cursor.getMonth()+1)}-${pad(cursor.getDate())}`;
+    if(iso < monthStart) break;
+    const entry = entryMap[iso];
+    if(entry !== undefined){
+      if(conditionFn(entry)){ streak++; cursor.setDate(cursor.getDate()-1); continue; }
+      break; // cargó ese día pero no cumplió la condición -> corta la racha
+    }
+    if(graceStatus(iso, today)==='pending'){ cursor.setDate(cursor.getDate()-1); continue; } // aún puede cargarlo, se salta
+    break; // ya venció el plazo sin cargar -> corta la racha
+  }
+  return streak;
+}
+const STREAK_DEFS = [
+  {key:'SP', label:'Smartphones', cond:e=>dayCat(e,'SP')>0},
+  {key:'Tab', label:'Tablets', cond:e=>dayCat(e,'Tab')>0},
+  {key:'WR', label:'Wearables', cond:e=>dayCat(e,'WR')>0},
+  {key:'AUD', label:'Audio', cond:e=>dayCat(e,'AUD')>0},
+  {key:'DIV2', label:'vendiendo en 2+ categorías', cond:e=>CAT_ORDER.filter(c=>dayCat(e,c)>0).length>=2},
+  {key:'DIV3', label:'siendo integral (3+ categorías)', cond:e=>CAT_ORDER.filter(c=>dayCat(e,c)>0).length>=3},
+];
+function streakMessage(streak, label){
+  if(streak>=15) return `🏆 ${streak}+ días seguidos — eres referente en ${label} este mes.`;
+  if(streak>=10) return `💪 ${streak} días de racha ${label} — nivel imparable.`;
+  if(streak>=7) return `🔥🔥🔥 ¡Una semana completa ${label} sin parar!`;
+  if(streak>=5) return `🔥🔥 ${streak} días en racha ${label}.`;
+  if(streak>=3) return `🔥 Llevas ${streak} días seguidos ${label}. ¡Sigue así!`;
+  return null;
+}
+function computeStreaksHtml(entries){
+  const msgs = STREAK_DEFS.map(def=>{
+    const streak = computeStreak(entries, def.cond);
+    const verb = ['SP','Tab','WR','AUD'].includes(def.key) ? `vendiendo ${def.label}` : def.label;
+    const msg = streakMessage(streak, verb);
+    return msg ? {streak, msg} : null;
+  }).filter(Boolean).sort((a,b)=>b.streak-a.streak);
+  if(msgs.length===0) return '';
+  return `<div class="card">
+    <div class="label-eyebrow">🔥 Tus rachas</div>
+    ${msgs.map(m=>`<div class="status-pill pill-amber" style="display:block;margin-bottom:8px;text-align:left;">${m.msg}</div>`).join('')}
+  </div>`;
+}
+
 /* ============ storage (Google Sheets vía Apps Script, JSONP) ============
    Usamos una etiqueta <script> en vez de fetch() para evitar por completo
    los problemas de CORS al conectar con Apps Script.                     */
@@ -552,7 +624,7 @@ async function renderLobby(){
       <div class="lobby-card-title">Cargue de venta diaria</div>
       <div class="lobby-card-sub">Reporta tu venta y consulta tu cumplimiento</div>
     </div>
-    <a class="lobby-card" href="benchmark.html" target="_blank" rel="noopener" style="text-decoration:none;display:block;">
+    <a class="lobby-card" href="benchmark.html" style="text-decoration:none;display:block;">
       <div class="lobby-card-title">Compara productos</div>
       <div class="lobby-card-sub">Benchmark frente a la competencia</div>
     </a>
@@ -1079,6 +1151,8 @@ async function renderDashboard(){
       <div class="label-eyebrow">Retroalimentación</div>
       ${feedbackMsgs.map(m=>`<div class="status-pill ${m.cls}" style="display:block;margin-bottom:8px;text-align:left;">${m.text}</div>`).join('')}
     </div>
+
+    ${computeStreaksHtml(entries)}
 
     <div class="card">
       <div class="label-eyebrow">Registrar ventas de hoy — por categoría</div>
@@ -2014,7 +2088,12 @@ function renderTabCarga(byChannel, chipsHtml){
     let badge, color;
     if(r.status==='full'){ badge = 'Cargó'; color='var(--green)'; }
     else if(r.status==='linked'){ badge = 'Cubierto (vinculada)'; color='var(--green)'; }
-    else if(r.status==='none'){ badge = 'No ha cargado'; color='var(--red)'; }
+    else if(r.status==='none'){
+      const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+      const gs = graceStatus(dateIso, todayMidnight);
+      badge = gs==='pending' ? 'Aún en plazo' : 'Vencido, no cargó';
+      color = gs==='pending' ? 'var(--amber)' : 'var(--red)';
+    }
     else { badge = `${r.loadedCount}/${r.totalRoles} promotores`; color='var(--amber)'; }
     let missingLine = '';
     if(r.status==='linked'){
@@ -2229,10 +2308,12 @@ async function renderStoreDetail(code){
     </div>`;
   });
 
-  // calendario de cargas del mes
+  // calendario de cargas del mes (con los 3 días de gracia: no se marca "vencido"
+  // hasta que pasen más de 3 días sin cargar esa fecha)
   const loadedSet = new Set(stat.entries.map(([iso])=>iso));
   const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   let missingPastCount = 0;
+  let pendingCount = 0;
   let dayGridHtml = '';
   for(let d=1; d<=DAYS_IN_MONTH; d++){
     const iso = `${TARGET_YEAR}-${pad(TARGET_MONTH+1)}-${pad(d)}`;
@@ -2240,7 +2321,11 @@ async function renderStoreDetail(code){
     const loaded = loadedSet.has(iso);
     const isFuture = dateObj > today0;
     let cls = 'day-loaded';
-    if(!loaded){ cls = isFuture ? 'day-future' : 'day-missing'; if(!isFuture) missingPastCount++; }
+    if(!loaded){
+      if(isFuture){ cls = 'day-future'; }
+      else if(graceStatus(iso, today0)==='pending'){ cls = 'day-pending'; pendingCount++; }
+      else { cls = 'day-missing'; missingPastCount++; }
+    }
     dayGridHtml += `<div class="day-box ${cls}">${d}</div>`;
   }
 
@@ -2286,16 +2371,20 @@ async function renderStoreDetail(code){
       </div>
       <div class="stat-row">
         <div class="stat"><div class="v">${stat.entries.length}</div><div class="l">Días cargados</div></div>
-        <div class="stat"><div class="v" style="color:${missingPastCount>0?'var(--red)':'var(--green)'}">${missingPastCount}</div><div class="l">Días sin cargar</div></div>
+        <div class="stat"><div class="v" style="color:${pendingCount>0?'var(--amber)':'var(--ink)'}">${pendingCount}</div><div class="l">En plazo (≤3 días)</div></div>
+        <div class="stat"><div class="v" style="color:${missingPastCount>0?'var(--red)':'var(--green)'}">${missingPastCount}</div><div class="l">Días vencidos</div></div>
       </div>
     </div>
+
+    ${computeStreaksHtml(stat.entries)}
 
     <div class="card">
       <div class="label-eyebrow">Calendario de cargas · ${TARGET_MONTH_LABEL}</div>
       <div class="day-grid">${dayGridHtml}</div>
       <div class="day-legend">
         <span><i style="background:var(--green-bg);border:1px solid var(--green);"></i>Cargó</span>
-        <span><i style="background:var(--red-bg);border:1px solid var(--red);"></i>No cargó</span>
+        <span><i style="background:var(--amber-bg);border:1px solid var(--amber);"></i>En plazo (≤3 días)</span>
+        <span><i style="background:var(--red-bg);border:1px solid var(--red);"></i>Vencido</span>
         <span><i style="background:var(--surface);"></i>Aún no llega</span>
       </div>
     </div>
