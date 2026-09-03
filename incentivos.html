@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Incentivo Septiembre 2026 — Huawei Field Force</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red-dark:#7A0000;
+    --red:#C00000;
+    --red-light:#F6D9D9;
+    --ink:#1A1A1A;
+    --gray:#6B6B6B;
+    --gray-light:#F2F2F2;
+    --gray-border:#E0E0E0;
+    --green:#2E7D32;
+    --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:Arial, Helvetica, sans-serif; background:var(--gray-light); color:var(--ink);}
+  h1,h2,h3,.brand{font-family:'Poppins', Arial, sans-serif;}
+  header{background:var(--red); color:var(--white); padding:20px 28px;}
+  header .eyebrow{font-size:13px; opacity:.85; margin-bottom:4px;}
+  header h1{margin:0; font-size:23px; font-weight:700;}
+  .wrap{max-width:1100px; margin:0 auto; padding:22px 20px 60px;}
+
+  .top-note{font-size:11.5px; color:var(--gray); margin:0 0 16px; text-align:center;}
+
+  .card{background:var(--white); border:1px solid var(--gray-border); border-radius:10px; padding:22px; margin-bottom:18px;}
+  .card h2{margin:0 0 14px; font-size:16px; font-weight:700; color:var(--red-dark);}
+
+  label{display:block; font-size:13px; font-weight:700; margin:16px 0 6px;}
+  label:first-of-type{margin-top:0;}
+
+  select, input[type=number], input[type=text]{
+    width:100%; padding:10px 12px; border:1px solid var(--gray-border); border-radius:8px;
+    font-size:15px; font-family:Arial; color:var(--ink); background:var(--white);
+  }
+  select:focus, input:focus{outline:2px solid var(--red); outline-offset:1px;}
+
+  .search-meta{font-size:12px; color:var(--gray); margin-top:6px;}
+  .results-list{margin-top:10px; max-height:230px; overflow-y:auto; border:1px solid var(--gray-border); border-radius:8px;}
+  .result-row{display:flex; justify-content:space-between; padding:9px 12px; border-bottom:1px solid var(--gray-border); cursor:pointer; font-size:13px;}
+  .result-row:last-child{border-bottom:none;}
+  .result-row:hover{background:var(--red-light);}
+  .result-row .rmeta{color:var(--gray); font-size:11.5px;}
+
+  .store-chip{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--gray-light); border-radius:8px; padding:10px 14px; margin-top:10px; font-size:13px;
+  }
+  .store-chip b{font-family:'Poppins';}
+  .store-chip button{border:none; background:none; color:var(--red); font-weight:700; cursor:pointer; font-size:12.5px;}
+
+  .cat-buttons{display:flex; gap:8px; flex-wrap:wrap;}
+  .cat-btn{
+    flex:1; min-width:70px; padding:10px 8px; border:1.5px solid var(--gray-border); background:var(--white);
+    border-radius:8px; font-weight:700; font-size:13px; color:var(--gray); cursor:pointer; text-align:center;
+    transition:background .15s, border-color .15s, color .15s;
+  }
+  .cat-btn.active{border-color:var(--red); background:var(--red); color:var(--white);}
+  .meta-note{font-size:12.5px; color:var(--gray); margin-top:6px;}
+
+  .gate-note{margin-top:12px; font-size:13px; padding:10px 12px; border-radius:8px; background:var(--gray-light);}
+  .gate-note.fail{background:#FBE1E1; color:var(--red-dark); font-weight:700;}
+  .gate-note.pass{background:#E4F1E4; color:var(--green); font-weight:700;}
+
+  .slider-row{margin-top:16px;}
+  input[type=range]{width:100%; accent-color:var(--red); margin-top:10px;}
+  .slider-scale{display:flex; justify-content:space-between; font-size:11px; color:var(--gray); margin-top:2px;}
+  .pct-display{font-family:'Poppins'; font-size:28px; font-weight:700; color:var(--red);}
+
+  .step-indicator{display:flex; gap:6px; margin-top:14px;}
+  .step-zone{flex:1; text-align:center; padding:8px 4px; border-radius:6px; font-size:12px; font-weight:700; background:var(--gray-light); color:var(--gray); border:1.5px solid transparent;}
+  .step-zone.active{background:var(--red-light); color:var(--red-dark); border-color:var(--red);}
+  .step-zone.locked{opacity:.35;}
+
+  .mini-steps{display:flex; gap:6px; margin:10px 0 14px; flex-wrap:wrap;}
+  .mini-step{
+    font-size:11px; color:var(--gray); background:var(--gray-light); border-radius:6px;
+    padding:4px 9px; border:1px solid transparent;
+  }
+  .mini-step.active{background:var(--red-light); color:var(--red-dark); border-color:var(--red); font-weight:700;}
+  .mini-step.locked{opacity:.4;}
+
+  .mode-toggle{display:flex; gap:8px; margin-top:0;}
+  .mode-btn{
+    flex:1; padding:11px 8px; border:1.5px solid var(--gray-border); background:var(--white);
+    border-radius:8px; font-weight:700; font-size:13px; color:var(--gray); cursor:pointer; text-align:center;
+  }
+  .mode-btn.active{border-color:var(--red); background:var(--red-light); color:var(--red-dark);}
+
+  .result-card{background:var(--red-dark); color:var(--white);}
+  .result-card h2{color:var(--white); font-size:17px;}
+  .result-big{font-family:'Poppins'; font-weight:800; font-size:38px; line-height:1.1; margin:6px 0 2px;}
+  .result-sub{font-size:13px; opacity:.85; margin-bottom:18px;}
+  .result-line{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.18); font-size:13.5px;}
+  .result-line:last-child{border-bottom:none;}
+  .result-line span:first-child{opacity:.8;}
+  .result-line span:last-child{font-weight:700; text-align:right;}
+  .badge{display:inline-block; padding:3px 10px; border-radius:20px; background:rgba(255,255,255,.15); font-size:12px; font-weight:700; margin-top:2px;}
+
+  .cat-total-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:16px 0;}
+  @media (max-width:600px){ .cat-total-grid{grid-template-columns:1fr 1fr;} }
+  .cat-total-box{background:rgba(255,255,255,.08); border-radius:8px; padding:10px; text-align:center;}
+  .cat-total-box.current{background:rgba(255,255,255,.22);}
+  .cat-total-box .ctb-name{font-size:11px; opacity:.8; font-weight:700;}
+  .cat-total-box .ctb-val{font-family:'Poppins'; font-weight:800; font-size:15px; margin-top:4px;}
+  .grand-total-line{
+    display:flex; justify-content:space-between; align-items:center;
+    border-top:1.5px solid rgba(255,255,255,.25); margin-top:6px; padding-top:14px; font-size:15px;
+  }
+  .grand-total-line .gt-val{font-family:'Poppins'; font-weight:800; font-size:22px;}
+
+  .explain{padding:14px 18px;}
+  .explain h2{color:var(--gray); font-size:12.5px; font-weight:700; margin-bottom:6px;}
+  .explain > p{font-size:11.5px; color:var(--gray); margin-top:0; font-weight:400;}
+  .steps-explain{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px;}
+  @media (max-width:700px){ .steps-explain{grid-template-columns:1fr;} }
+  .step-card{border:1px solid var(--gray-border); border-radius:8px; padding:10px; position:relative;}
+  .step-card .num{
+    position:absolute; top:-9px; left:10px; background:var(--gray-border); color:var(--gray);
+    font-family:'Poppins'; font-weight:700; font-size:11px; width:20px; height:20px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step-card h3{margin:6px 0 4px; font-size:12px; color:var(--gray); font-weight:700;}
+  .step-card p{margin:0; font-size:11px; color:var(--gray); line-height:1.4;}
+  .cuenta-mins{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px;}
+  @media (max-width:600px){ .cuenta-mins{grid-template-columns:1fr 1fr;} }
+  .cuenta-min-box{border:1px solid var(--gray-border); border-radius:6px; padding:6px; text-align:center;}
+  .cuenta-min-box .cm-cat{font-size:10.5px; color:var(--gray); font-weight:700;}
+  .cuenta-min-box .cm-val{font-family:'Poppins'; font-weight:700; font-size:13px; color:var(--gray); margin-top:2px;}
+
+  .table-wrap{margin-top:14px; overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th, td{padding:9px 11px; text-align:left; border-bottom:1px solid var(--gray-border); white-space:nowrap;}
+  th{background:var(--ink); color:var(--white); font-family:'Poppins'; font-weight:600; font-size:12px;}
+  td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  tr.selected-row td{background:var(--red-light); font-weight:700;}
+  td.step-hit{outline:2px solid var(--red); outline-offset:-2px; border-radius:4px;}
+
+  .foot-note{margin-top:10px; font-size:12px; color:var(--gray); text-align:center;}
+
+  /* ---------- Lobby ---------- */
+  .lobby-wrap{max-width:760px; margin:60px auto; padding:0 20px; text-align:center;}
+  .lobby-wrap h1{font-size:26px; margin-bottom:8px;}
+  .lobby-wrap .sub{color:var(--gray); font-size:14px; margin-bottom:34px;}
+  .lobby-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media (max-width:640px){ .lobby-grid{grid-template-columns:1fr;} }
+  .lobby-btn{
+    display:block; text-align:left; background:var(--white); border:1.5px solid var(--gray-border);
+    border-radius:14px; padding:26px 22px; cursor:pointer; transition:border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .lobby-btn:hover{border-color:var(--red); transform:translateY(-2px); box-shadow:0 8px 20px rgba(192,0,0,.12);}
+  .lobby-btn .lb-icon{
+    width:42px; height:42px; border-radius:10px; background:var(--red-light); color:var(--red-dark);
+    display:flex; align-items:center; justify-content:center; font-family:'Poppins'; font-weight:800; font-size:18px; margin-bottom:14px;
+  }
+  .lobby-btn h2{margin:0 0 8px; font-size:16.5px; color:var(--ink);}
+  .lobby-btn p{margin:0; font-size:13px; color:var(--gray); line-height:1.5;}
+
+  .back-btn{
+    display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--red);
+    font-weight:700; font-size:13px; cursor:pointer; padding:0; margin-bottom:16px;
+  }
+  .back-btn:hover{text-decoration:underline;}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ---------- Login ---------- */
+  .login-icon{font-size:34px; margin-bottom:6px;}
+  .login-error{
+    font-size:12.5px; color:var(--red-dark); background:#FBE1E1; border-radius:8px;
+    padding:8px 10px; margin-top:12px; display:none;
+  }
+  .login-error.show{display:block;}
+  .login-btn{
+    width:100%; padding:12px; border:none; border-radius:8px; background:var(--red); color:var(--white);
+    font-family:'Poppins'; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .login-btn:hover{background:var(--red-dark);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap" style="padding:0;">
+    <a href="index.html" style="display:inline-block;background:rgba(0,0,0,0.12);color:inherit;text-decoration:none;font-size:13px;font-weight:600;padding:7px 14px;border-radius:20px;margin-bottom:10px;">&lsaquo; Huawei Retail System</a>
+    <div class="eyebrow brand">Huawei Field Force · Colombia</div>
+    <h1 id="pageTitle">Incentivo Septiembre 2026</h1>
+  </div>
+</header>
+
+<!-- ======================= LOGIN ======================= -->
+<div class="view active" id="viewLogin">
+  <div class="lobby-wrap" style="max-width:380px;">
+    <div class="login-icon">🔒</div>
+    <h1>Acceso de empleados</h1>
+    <p class="sub">Contenido confidencial — solo para empleados en función de Huawei.</p>
+    <div class="card" style="text-align:left;">
+      <label style="margin-top:0;">Usuario (tu número de cédula)</label>
+      <input type="text" id="loginUser" inputmode="numeric" placeholder="Número de cédula" autocomplete="username">
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password">
+      <div class="login-error" id="loginError"></div>
+      <button class="login-btn" id="loginBtn" style="margin-top:16px;">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= LOBBY ======================= -->
+<div class="view" id="viewLobby">
+  <div class="lobby-wrap">
+    <h1>¿Qué necesitas?</h1>
+    <p class="sub">Elige una herramienta para continuar.</p>
+    <div class="lobby-grid">
+      <button class="lobby-btn" id="goModelBtn">
+        <div class="lb-icon">1</div>
+        <h2>Modelo de incentivos Septiembre 2026</h2>
+        <p>Explora cómo funciona el esquema comisional: pasos, mínimos por cuenta y valores por modelo.</p>
+      </button>
+      <button class="lobby-btn" id="goPersonalBtn">
+        <div class="lb-icon">2</div>
+        <h2>Calculadora personalizada de incentivos</h2>
+        <p>Busca tu tienda, ingresa cuántas unidades vas a vender por modelo y calcula cuánto vas a ganar.</p>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= VISTA 1: MODELO DE INCENTIVOS ======================= -->
+<div class="view" id="viewModel">
+<div class="wrap">
+  <button class="back-btn" onclick="goLobby()">← Volver al inicio</button>
+
+  <div class="card explain" style="margin-bottom:20px;">
+    <h2 style="color:var(--red-dark); font-size:17px;">¿Cómo funciona el incentivo?</h2>
+    <p style="font-size:13.5px; color:var(--ink); margin-top:-6px; line-height:1.6;">
+      El modelo comisional del mes de septiembre contempla el cumplimiento por categoría de tu punto de venta.
+      Con base en este cumplimiento se te pagará un monto diferente, que se compone de 3 pasos:
+    </p>
+    <div class="steps-explain">
+      <div class="step-card"><div class="num">1</div><h3>Base mínima – 59%</h3><p>Cumplimiento del target de la categoría entre la base mínima del canal y el 60%.</p></div>
+      <div class="step-card"><div class="num">2</div><h3>60% – 100%</h3><p>Cumplimiento del target de la categoría entre 61% y 100%.</p></div>
+      <div class="step-card"><div class="num">3</div><h3>Sobrecumplimiento</h3><p>Cumplimiento del target de la categoría por encima del 100%.</p></div>
+    </div>
+    <p style="font-size:13px; color:var(--ink); margin-top:14px; line-height:1.6;">
+      Cada canal contempla una base mínima de cumplimiento obligatoria para que el pago de incentivos empiece a ser efectivo.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Cuenta</th><th>Ach mínimo SP</th><th>Ach mínimo WR</th><th>Ach mínimo Aud</th><th>Ach mínimo Tab</th></tr></thead>
+        <tbody>
+          <tr><td>CLARO</td><td>&gt;40%</td><td>&gt;40%</td><td>&gt;40%</td><td>&gt;30%</td></tr>
+          <tr><td>Alkosto / Falabella</td><td>&gt;30%</td><td>&gt;40%</td><td>&gt;40%</td><td>&gt;20%</td></tr>
+          <tr><td>Alkomprar</td><td>0%</td><td>&gt;50%</td><td>&gt;50%</td><td>0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="meta-note" style="margin-bottom:10px; font-weight:700; color:var(--ink);">Ejercicio práctico</div>
+
+  <div class="grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+    <div class="card">
+      <h2>1. Cuenta</h2>
+      <div class="cat-buttons" id="m1_cuentaButtons"></div>
+
+      <h2 style="margin-top:22px;">2. Categoría y modelo</h2>
+      <div class="cat-buttons" id="m1_catButtons"></div>
+      <select id="m1_modelSelect" style="margin-top:10px;"></select>
+      <div class="gate-note" id="m1_gateNote"></div>
+
+      <h2 style="margin-top:22px;">3. % de cumplimiento de la categoría</h2>
+      <div class="slider-row">
+        <input type="range" id="m1_pctSlider" min="0" max="150" value="80" step="1">
+        <div class="slider-scale"><span>0%</span><span>60%</span><span>100%</span><span>150%</span></div>
+        <div class="pct-display" id="m1_pctDisplay">80%</div>
+      </div>
+      <div class="step-indicator">
+        <div class="step-zone" id="m1_zone1">Paso 1<br>&lt;60%</div>
+        <div class="step-zone" id="m1_zone2">Paso 2<br>60–100%</div>
+        <div class="step-zone" id="m1_zone3">Paso 3<br>&gt;100%</div>
+      </div>
+
+      <h2 style="margin-top:22px;">4. Unidades vendidas de este modelo</h2>
+      <input type="number" id="m1_unitsInput" min="0" value="10">
+    </div>
+
+    <div class="card result-card">
+      <h2>Resultado</h2>
+      <div class="badge" id="m1_stepBadge">Paso 2</div>
+      <div class="result-big" id="m1_totalResult">$0</div>
+      <div class="result-sub">Total a ganar por este modelo</div>
+      <div class="result-line"><span>Comisión por unidad</span><span id="m1_unitCommission">$0</span></div>
+      <div class="result-line"><span>Unidades vendidas</span><span id="m1_unitsEcho">0</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <h2>Todos los modelos de esta categoría</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Modelo</th><th style="text-align:right;">Paso 1 (&lt;60%)</th><th style="text-align:right;">Paso 2 (60–100%)</th><th style="text-align:right;">Paso 3 (&gt;100%)</th></tr>
+        </thead>
+        <tbody id="m1_tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot-note">Valores según el esquema comisional de Septiembre 2026. Ninguna cifra fue modificada.</div>
+</div>
+</div>
+
+<!-- ======================= VISTA 2: CALCULADORA PERSONALIZADA ======================= -->
+<div class="view" id="viewPersonal">
+<div class="wrap">
+  <button class="back-btn" onclick="goLobby()">← Volver al inicio</button>
+
+  <div class="card explain">
+    <h2 style="color:var(--red-dark); font-size:17px;">¿Cómo funciona el incentivo?</h2>
+    <p style="font-size:13.5px; color:var(--ink); margin-top:-6px; line-height:1.6;">
+      El modelo comisional del mes de septiembre contempla el cumplimiento por categoría de tu punto de venta.
+      Con base en este cumplimiento se te pagará un monto diferente, que se compone de 3 pasos:
+    </p>
+    <div class="steps-explain">
+      <div class="step-card"><div class="num">1</div><h3>Base mínima – 59%</h3><p>Cumplimiento del target de la categoría entre la base mínima del canal y el 60%.</p></div>
+      <div class="step-card"><div class="num">2</div><h3>60% – 100%</h3><p>Cumplimiento del target de la categoría entre 61% y 100%.</p></div>
+      <div class="step-card"><div class="num">3</div><h3>Sobrecumplimiento</h3><p>Cumplimiento del target de la categoría por encima del 100%.</p></div>
+    </div>
+    <p style="font-size:13px; color:var(--ink); margin-top:14px; line-height:1.6;">
+      Cada canal contempla una base mínima de cumplimiento obligatoria para que el pago de incentivos empiece a ser efectivo.
+    </p>
+    <div id="cuentaMinsTitle" style="font-weight:700; color:var(--gray); font-size:11px; margin-top:10px;"></div>
+    <div class="cuenta-mins" id="cuentaMinsGrid"></div>
+  </div>
+
+  <div class="meta-note" style="margin-bottom:10px; font-weight:700; color:var(--ink);">Ejercicio práctico</div>
+  <p class="top-note">Selecciona tu tienda para que el % de cumplimiento se calcule con sus ventas reales del mes pasado. Si no la seleccionas, se usa un valor de referencia que puedes ajustar manualmente.</p>
+
+  <div class="card">
+    <h2>1. Busca tu tienda (Obligatorio)</h2>
+    <input type="text" id="searchInput" placeholder="Nombre, código, cuenta, promotor o supervisor…">
+    <div class="search-meta" id="searchMeta"></div>
+    <div class="results-list" id="resultsList" style="display:none;"></div>
+    <div class="store-chip" id="storeChip" style="display:none;">
+      <span id="storeChipText"></span>
+      <button id="clearStoreBtn">Quitar</button>
+    </div>
+    <div class="meta-note" id="storeAutofillNote"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Cuenta</h2>
+    <div class="cat-buttons" id="cuentaButtons"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Categoría</h2>
+    <div class="cat-buttons" id="catButtons"></div>
+
+    <h2 style="margin-top:22px;">4. ¿Qué quieres calcular?</h2>
+    <div class="mode-toggle">
+      <div class="mode-btn active" id="modeUnitsBtn">Mi venta actual</div>
+      <div class="mode-btn" id="modeGoalBtn">Quiero ganar cierto monto</div>
+    </div>
+    <div id="goalInputWrap" style="display:none;">
+      <label>¿Cuánto quieres ganar en total en esta categoría?</label>
+      <input type="number" id="goalInput" min="0" step="10000" value="200000">
+      <label>Completar el monto que falte con unidades de…</label>
+      <select id="goalModelSelect"></select>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>¿Cuántas unidades de cada modelo necesitas vender?</h2>
+
+    <div class="gate-note" id="gateNote"></div>
+    <div class="mini-steps" id="miniSteps"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Modelo</th>
+            <th style="text-align:right;">Paso 1</th>
+            <th style="text-align:right;">Paso 2</th>
+            <th style="text-align:right;">Paso 3</th>
+            <th style="text-align:center;">Unidades</th>
+            <th style="text-align:right;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4"></td>
+            <td style="text-align:right; font-weight:700;">Total</td>
+            <td class="num" id="tableTotalCell" style="font-weight:700;">$0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- RESULTADO (al final) -->
+  <div class="card result-card" id="resultCard"></div>
+
+  <div class="foot-note">Valores del esquema comisional de Septiembre y del Target por tienda. Ninguna cifra fue modificada.</div>
+</div>
+</div>
+
+<script>
+// ======================= LOGIN =======================
+const CEDULAS = ["1000157192", "1000219815", "1000330947", "1000339284", "1000376405", "1000416030", "1000707272", "1000727507", "1000775705", "1001873088", "1003627322", "1003808035", "1004502138", "1004521184", "1005474824", "1006171292", "1006172168", "1006552728", "1007523970", "1007647021", "1007708603", "1007898431", "1010190346", "1012324817", "1013341239", "1014204239", "1014204672", "1014239728", "1019006011", "1019096561", "1022444192", "1022960551", "1022980882", "1023017289", "1023038920", "1023939284", "1023960567", "1023972687", "1024533460", "1024540552", "1024566499", "1025323572", "1025520997", "1025647684", "1026561062", "1027151202", "1027520523", "1030588595", "1030608722", "1030701980", "1031152292", "1031160998", "1031643923", "1031803016", "1032462830", "1033691637", "1039473682", "1043663212", "1044431279", "1045419678", "1047393276", "1047396091", "1047438296", "1054571699", "1062088681", "1065130848", "1069491962", "1070620858", "1072653290", "1073605363", "1077842830", "1077970378", "1082875344", "1082899136", "1087118266", "1088240583", "1094926835", "1095787937", "1095817884", "1096231268", "1098706982", "1102839765", "1103739142", "1104776600", "1106889297", "1108558509", "1110234813", "1110542977", "1117524976", "1118541182", "1120474235", "1121880706", "1122507847", "1130604642", "1143412506", "1144190376", "1193123378", "1193126450", "1193155166", "1193461120", "1233688278", "1233693593", "1235256355", "39576520", "40031877", "4516649", "52491117", "52494967", "52540831", "52692122", "52809770", "53003952", "53133547", "5402835", "65774001", "80119958", "80750535", "80844909", "80913207", "88032035", "91110256", "92543803", "94537205"];
+const CEDULAS_SET = new Set(CEDULAS);
+
+function attemptLogin(){
+  const user = document.getElementById("loginUser").value.trim();
+  const pass = document.getElementById("loginPass").value.trim();
+  const errEl = document.getElementById("loginError");
+
+  if(!user || !pass){
+    errEl.textContent = "Ingresa tu usuario y contraseña.";
+    errEl.classList.add("show");
+    return;
+  }
+  if(!CEDULAS_SET.has(user)){
+    errEl.textContent = "El usuario no está autorizado. Verifica tu número de cédula.";
+    errEl.classList.add("show");
+    return;
+  }
+  if(pass !== "H" + user){
+    errEl.textContent = "Usuario o contraseña incorrectos.";
+    errEl.classList.add("show");
+    return;
+  }
+  errEl.classList.remove("show");
+  showView("lobby");
+}
+document.getElementById("loginBtn").onclick = attemptLogin;
+document.getElementById("loginPass").addEventListener("keydown", e=>{ if(e.key==="Enter") attemptLogin(); });
+document.getElementById("loginUser").addEventListener("keydown", e=>{ if(e.key==="Enter") document.getElementById("loginPass").focus(); });
+
+// ======================= LOBBY / ROUTING =======================
+const views = {
+  login: document.getElementById("viewLogin"),
+  lobby: document.getElementById("viewLobby"),
+  model: document.getElementById("viewModel"),
+  personal: document.getElementById("viewPersonal"),
+};
+const titles = {
+  login: "Incentivo Septiembre 2026",
+  lobby: "Incentivo Septiembre 2026",
+  model: "Modelo de Incentivos — Septiembre 2026",
+  personal: "Calculadora Personalizada de Incentivos",
+};
+function showView(name){
+  Object.values(views).forEach(v => v.classList.remove("active"));
+  views[name].classList.add("active");
+  document.getElementById("pageTitle").textContent = titles[name];
+  window.scrollTo({top:0});
+}
+function goLobby(){ showView("lobby"); }
+document.getElementById("goModelBtn").onclick = ()=> showView("model");
+document.getElementById("goPersonalBtn").onclick = ()=> showView("personal");
+</script>
+
+<!-- ======================= SCRIPT VISTA 1 (aislado en su propio scope) ======================= -->
+<script>
+(function(){
+const DATA = {
+  SP: { label:"Smartphones", models: [
+    ["Huawei Pura 80 Ultra", 24000, 90000, 93000],
+    ["Huawei Pura 80 Pro", 21000, 85000, 105000],
+    ["Huawei Pura 80", 30000, 100000, 102000],
+    ["Huawei nova Y74", 5000, 15000, 18000],
+    ["Huawei nova Y73", 3000, 10000, 12000],
+    ["Huawei nova 14", 9000, 30000, 36000],
+    ["Huawei nova 14 Pro", 4500, 15000, 18000],
+    ["Huawei Mate 80 Pro", 21000, 70000, 84000],
+    ["HUAWEI nova 15 max", 12000, 40000, 48000],
+  ]},
+  WR: { label:"Wearables", models: [
+    ["Huawei Watch GT 7 Pro", 6000, 20000, 24000],
+    ["Huawei Watch GT 7 46/41", 5000, 15000, 18000],
+    ["Huawei Watch GT 7 41 Ceramic", 5000, 17000, 20400],
+    ["HUAWEI Watch Fit 5 Pro", 1000, 4500, 5400],
+    ["HUAWEI Watch Fit 5", 1000, 4000, 4800],
+    ["HUAWEI WATCH 5", 2000, 6000, 7200],
+    ["HUAWEI WATCH FIT 4", 1000, 2000, 2400],
+    ["HUAWEI WATCH FIT 4 Pro", 1000, 4000, 4800],
+    ["HUAWEI Watch D2", 1000, 3000, 3600],
+    ["HUAWEI Watch GT Runner 2", 1000, 3000, 3600],
+    ["HUAWEI GT 6 PRO", 1000, 4500, 5400],
+    ["HUAWEI GT 6", 1000, 4000, 4800],
+  ]},
+  AUD: { label:"Audio", models: [
+    ["Huawei Freeclip2", 2250, 7500, 9000],
+    ["Huawei Freebuds Pro 5", 2550, 8500, 10200],
+  ]},
+  Tab: { label:"Tablets", models: [
+    ["Huawei MatePad SE 11 (OM)", 2000, 8000, 9600],
+    ["Huawei MatePad SE 11 (CLARO)", 2400, 8000, 9600],
+    ["MatePad 11.5 Taoxingzhi 256gb", 8000, 25000, 30000],
+    ["MatePad 11.5 Taoxingzhi 128gb + Keyboard", 5000, 15000, 18000],
+    ["MatePad 11.5 Taoxingzhi 128gb", 3000, 10000, 12000],
+  ]}
+};
+
+const CUENTAS = ["CLARO", "Alkosto / Falabella", "Alkomprar"];
+const MIN_TABLE = {
+  SP:  { "CLARO": 40, "Alkosto / Falabella": 30, "Alkomprar": 0  },
+  WR:  { "CLARO": 40, "Alkosto / Falabella": 40, "Alkomprar": 50 },
+  AUD: { "CLARO": 40, "Alkosto / Falabella": 40, "Alkomprar": 50 },
+  Tab: { "CLARO": 30, "Alkosto / Falabella": 20, "Alkomprar": 0  },
+};
+
+let currentCat = "SP";
+let currentModelIdx = 0;
+let currentCuenta = "CLARO";
+
+const fmt = n => "$" + Math.round(n).toLocaleString("es-CO");
+
+function buildCuentaButtons(){
+  const el = document.getElementById("m1_cuentaButtons");
+  el.innerHTML = "";
+  CUENTAS.forEach(name=>{
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (name===currentCuenta ? " active":"");
+    btn.textContent = name;
+    btn.onclick = ()=>{ currentCuenta = name; buildCuentaButtons(); render(); };
+    el.appendChild(btn);
+  });
+}
+
+function buildCatButtons(){
+  const el = document.getElementById("m1_catButtons");
+  el.innerHTML = "";
+  Object.keys(DATA).forEach(key=>{
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (key===currentCat ? " active":"");
+    btn.textContent = key;
+    btn.onclick = ()=>{ currentCat = key; currentModelIdx = 0; buildCatButtons(); buildModelSelect(); render(); };
+    el.appendChild(btn);
+  });
+}
+
+function buildModelSelect(){
+  const sel = document.getElementById("m1_modelSelect");
+  sel.innerHTML = "";
+  DATA[currentCat].models.forEach((m, i)=>{
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = m[0];
+    sel.appendChild(opt);
+  });
+  sel.value = currentModelIdx;
+  sel.onchange = ()=>{ currentModelIdx = parseInt(sel.value); render(); };
+}
+
+function getStep(pct){
+  if(pct < 60) return 1;
+  if(pct <= 100) return 2;
+  return 3;
+}
+
+function render(){
+  const model = DATA[currentCat].models[currentModelIdx];
+  const [name, s1, s2, s3] = model;
+  const steps = [null, s1, s2, s3];
+
+  const pct = parseFloat(document.getElementById("m1_pctSlider").value);
+  document.getElementById("m1_pctDisplay").textContent = pct + "%";
+  const units = Math.max(0, parseInt(document.getElementById("m1_unitsInput").value) || 0);
+
+  const minReq = MIN_TABLE[currentCat][currentCuenta];
+  const qualifies = minReq === 0 ? true : pct > minReq;
+
+  const gateEl = document.getElementById("m1_gateNote");
+  if(minReq === 0){
+    gateEl.className = "gate-note pass";
+    gateEl.textContent = "Sin mínimo de cumplimiento para " + currentCuenta + " en esta categoría — cualquier % genera incentivo.";
+  } else if(qualifies){
+    gateEl.className = "gate-note pass";
+    gateEl.textContent = "Cumple el mínimo de " + currentCuenta + " (>" + minReq + "%) — el incentivo aplica.";
+  } else {
+    gateEl.className = "gate-note fail";
+    gateEl.textContent = currentCuenta + " exige más de " + minReq + "% de cumplimiento en esta categoría. Con " + pct + "% no aplica incentivo.";
+  }
+
+  const step = getStep(pct);
+  ["m1_zone1","m1_zone2","m1_zone3"].forEach((id, idx)=>{
+    const el = document.getElementById(id);
+    el.classList.toggle("active", qualifies && idx+1===step);
+    el.classList.toggle("locked", !qualifies);
+  });
+
+  const unitCommission = qualifies ? steps[step] : 0;
+  const total = unitCommission * units;
+
+  document.getElementById("m1_stepBadge").textContent = qualifies ? ("Paso " + step + " · " + name) : ("No aplica · " + name);
+  document.getElementById("m1_totalResult").textContent = fmt(total);
+  document.getElementById("m1_unitCommission").textContent = fmt(unitCommission) + " / unidad";
+  document.getElementById("m1_unitsEcho").textContent = units;
+
+  const tbody = document.getElementById("m1_tableBody");
+  tbody.innerHTML = "";
+  DATA[currentCat].models.forEach((m, i)=>{
+    const tr = document.createElement("tr");
+    if(i===currentModelIdx) tr.className = "selected-row";
+    const cellClass = (colStep)=> (i===currentModelIdx && qualifies && colStep===step) ? "num step-hit" : "num";
+    tr.innerHTML = `
+      <td>${m[0]}</td>
+      <td class="${cellClass(1)}">${fmt(m[1])}</td>
+      <td class="${cellClass(2)}">${fmt(m[2])}</td>
+      <td class="${cellClass(3)}">${fmt(m[3])}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("m1_pctSlider").addEventListener("input", render);
+document.getElementById("m1_unitsInput").addEventListener("input", render);
+
+buildCuentaButtons();
+buildCatButtons();
+buildModelSelect();
+render();
+})();
+</script>
+
+<!-- ======================= SCRIPT VISTA 2 (aislado en su propio scope) ======================= -->
+<script>
+(function(){
+const DATA = {
+  SP: { label:"Smartphones", models: [
+    ["Huawei Pura 80 Ultra", 24000, 90000, 93000],
+    ["Huawei Pura 80 Pro", 21000, 85000, 105000],
+    ["Huawei Pura 80", 30000, 100000, 102000],
+    ["Huawei nova Y74", 5000, 15000, 18000],
+    ["Huawei nova Y73", 3000, 10000, 12000],
+    ["Huawei nova 14", 9000, 30000, 36000],
+    ["Huawei nova 14 Pro", 4500, 15000, 18000],
+    ["Huawei Mate 80 Pro", 21000, 70000, 84000],
+    ["HUAWEI nova 15 max", 12000, 40000, 48000],
+  ]},
+  WR: { label:"Wearables", models: [
+    ["Huawei Watch GT 7 Pro", 6000, 20000, 24000],
+    ["Huawei Watch GT 7 46/41", 5000, 15000, 18000],
+    ["Huawei Watch GT 7 41 Ceramic", 5000, 17000, 20400],
+    ["HUAWEI Watch Fit 5 Pro", 1000, 4500, 5400],
+    ["HUAWEI Watch Fit 5", 1000, 4000, 4800],
+    ["HUAWEI WATCH 5", 2000, 6000, 7200],
+    ["HUAWEI WATCH FIT 4", 1000, 2000, 2400],
+    ["HUAWEI WATCH FIT 4 Pro", 1000, 4000, 4800],
+    ["HUAWEI Watch D2", 1000, 3000, 3600],
+    ["HUAWEI Watch GT Runner 2", 1000, 3000, 3600],
+    ["HUAWEI GT 6 PRO", 1000, 4500, 5400],
+    ["HUAWEI GT 6", 1000, 4000, 4800],
+  ]},
+  AUD: { label:"Audio", models: [
+    ["Huawei Freeclip2", 2250, 7500, 9000],
+    ["Huawei Freebuds Pro 5", 2550, 8500, 10200],
+  ]},
+  Tab: { label:"Tablets", models: [
+    ["Huawei MatePad SE 11 (OM)", 2000, 8000, 9600],
+    ["Huawei MatePad SE 11 (CLARO)", 2400, 8000, 9600],
+    ["MatePad 11.5 Taoxingzhi 256gb", 8000, 25000, 30000],
+    ["MatePad 11.5 Taoxingzhi 128gb + Keyboard", 5000, 15000, 18000],
+    ["MatePad 11.5 Taoxingzhi 128gb", 3000, 10000, 12000],
+  ]}
+};
+
+const CUENTAS = ["CLARO", "Alkosto / Falabella", "Alkomprar"];
+const MIN_TABLE = {
+  SP:  { "CLARO": 40, "Alkosto / Falabella": 30, "Alkomprar": 0  },
+  WR:  { "CLARO": 40, "Alkosto / Falabella": 40, "Alkomprar": 50 },
+  AUD: { "CLARO": 40, "Alkosto / Falabella": 40, "Alkomprar": 50 },
+  Tab: { "CLARO": 30, "Alkosto / Falabella": 20, "Alkomprar": 0  },
+};
+const CHANNEL_TO_CUENTA = {
+  "CLARO": "CLARO", "CALL CENTER": "CLARO",
+  "ALKOSTO": "Alkosto / Falabella", "FALABELLA": "Alkosto / Falabella", "Falabella": "Alkosto / Falabella",
+  "Alkomprar": "Alkomprar",
+};
+const CAT_TO_TARGET_CAT = { SP:"SP", WR:"WR", AUD:"Audio", Tab:"Tab" };
+const CAT_PLURAL = { SP:"smartphones", WR:"wearables", AUD:"audífonos", Tab:"tablets" };
+const CAT_KEYS = Object.keys(DATA);
+
+const STORES = [{"channel": "CALL CENTER", "account": "CLARO", "code": "C230", "name": "Domic Btá Zf", "promoter": "", "supervisor": "", "target": {"SP": 723, "Tab": 185, "WR": 230, "Audio": 0, "Total": 1138}}, {"channel": "CALL CENTER", "account": "CLARO", "code": "C200", "name": "Tienda Virtual", "promoter": "", "supervisor": "", "target": {"SP": 96, "Tab": 122, "WR": 339, "Audio": 176, "Total": 733}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430013", "name": "Alkosto Av 68", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 50, "Tab": 25, "WR": 254, "Audio": 151, "Total": 480}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430020", "name": "Alkosto Venecia", "promoter": "", "supervisor": "LUISA ORDOÑEZ", "target": {"SP": 65, "Tab": 25, "WR": 190, "Audio": 154, "Total": 434}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL76001430015", "name": "Alkosto Cali Cr. 80", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 13, "Tab": 25, "WR": 163, "Audio": 92, "Total": 293}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430012", "name": "Alkosto 170", "promoter": "", "supervisor": "JULIAN URIBE ", "target": {"SP": 30, "Tab": 25, "WR": 144, "Audio": 92, "Total": 291}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO085439", "name": "Alkosto Cali Norte", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 19, "Tab": 4, "WR": 127, "Audio": 79, "Total": 229}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430312", "name": "Ktronix Salitre", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 15, "Tab": 25, "WR": 108, "Audio": 71, "Total": 219}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO027717", "name": "Alkosto El Eden", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 19, "Tab": 5, "WR": 106, "Audio": 83, "Total": 213}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL66001430019", "name": "Alkosto Pereira Av. Americas", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 15, "Tab": 0, "WR": 120, "Audio": 78, "Total": 213}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430014", "name": "Alkosto Bog Cr 30", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 20, "Tab": 0, "WR": 117, "Audio": 75, "Total": 212}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL25754430039", "name": "Ktronix Soacha", "promoter": "", "supervisor": "TATIANA BARRAGAN ", "target": {"SP": 15, "Tab": 3, "WR": 107, "Audio": 81, "Total": 206}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL50001430021", "name": "Alkosto Villavicencio Princ Cl. 31", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 22, "Tab": 2, "WR": 114, "Audio": 63, "Total": 201}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL08001430045", "name": "Alkosto Barranquilla", "promoter": "", "supervisor": "Bermúdez Sariel Renzo Rafael", "target": {"SP": 6, "Tab": 0, "WR": 127, "Audio": 59, "Total": 192}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL68276430391", "name": "Alkosto Floridablanca", "promoter": "", "supervisor": "Romero Mendez Jhon Alexander", "target": {"SP": 20, "Tab": 3, "WR": 106, "Audio": 63, "Total": 192}}, {"channel": "CLARO", "account": "CLARO", "code": "scol50001110792", "name": "Cav Bogota Plaza Claro", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 44, "Tab": 19, "WR": 88, "Audio": 38, "Total": 189}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430310", "name": "Ktronix Plaza De Las Americas", "promoter": "", "supervisor": "RUBEN CEDEÑO", "target": {"SP": 20, "Tab": 5, "WR": 91, "Audio": 71, "Total": 187}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL15001430159", "name": "Ktronix Tunja", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 10, "Tab": 2, "WR": 85, "Audio": 77, "Total": 174}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430307", "name": "Ktronix Centro Mayor", "promoter": "", "supervisor": "TATIANA BARRAGAN ", "target": {"SP": 10, "Tab": 0, "WR": 94, "Audio": 64, "Total": 168}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO087548", "name": "Ktronix Mall Plaza Nqs", "promoter": "", "supervisor": "TATIANA BARRAGAN ", "target": {"SP": 10, "Tab": 3, "WR": 86, "Audio": 64, "Total": 163}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL25175430566", "name": "Ktronix Cc Fontanar Cajica", "promoter": "", "supervisor": "RUBEN CEDEÑO", "target": {"SP": 12, "Tab": 0, "WR": 89, "Audio": 58, "Total": 159}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL17001430293", "name": "Ktronix Manizales", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 8, "Tab": 3, "WR": 88, "Audio": 57, "Total": 156}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430316", "name": "Ktronix Unicentro", "promoter": "", "supervisor": "JULIAN URIBE ", "target": {"SP": 10, "Tab": 0, "WR": 80, "Audio": 60, "Total": 150}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430313", "name": "Ktronix Suba", "promoter": "", "supervisor": "JULIAN URIBE ", "target": {"SP": 10, "Tab": 5, "WR": 69, "Audio": 63, "Total": 147}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL68001430304", "name": "Ktronix Bucaramanga", "promoter": "", "supervisor": "Romero Mendez Jhon Alexander", "target": {"SP": 9, "Tab": 0, "WR": 84, "Audio": 50, "Total": 143}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430315", "name": "Ktronix Titan Plaza", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 7, "Tab": 3, "WR": 64, "Audio": 64, "Total": 138}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL50001430317", "name": "Ktronix Villavicencio", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 13, "Tab": 0, "WR": 75, "Audio": 50, "Total": 138}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL70001430162", "name": "Alkosto Sincelejo", "promoter": "", "supervisor": "Bermúdez Sariel Renzo Rafael", "target": {"SP": 6, "Tab": 0, "WR": 83, "Audio": 46, "Total": 135}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL11001430303", "name": "Ktronix 20 Julio", "promoter": "", "supervisor": "TATIANA BARRAGAN ", "target": {"SP": 10, "Tab": 0, "WR": 67, "Audio": 55, "Total": 132}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL25473430308", "name": "Ktronix Mosquera", "promoter": "", "supervisor": "RUBEN CEDEÑO", "target": {"SP": 10, "Tab": 3, "WR": 66, "Audio": 49, "Total": 128}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO082615", "name": "Ktronix Barranquilla", "promoter": "", "supervisor": "Bermúdez Sariel Renzo Rafael", "target": {"SP": 18, "Tab": 0, "WR": 58, "Audio": 43, "Total": 119}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL76001430130", "name": "Ktronix Chipichape", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 8, "Tab": 0, "WR": 65, "Audio": 45, "Total": 118}}, {"channel": "CLARO", "account": "CLARO", "code": "scol25754110099", "name": "Cav Soacha Mercurio Ii", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 38, "Tab": 15, "WR": 47, "Audio": 15, "Total": 115}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO073963", "name": "Ktronix Fusagasuga", "promoter": "", "supervisor": "Luisa Ordoñez", "target": {"SP": 6, "Tab": 0, "WR": 60, "Audio": 40, "Total": 106}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO093929", "name": "Ktronix Cartagena", "promoter": "", "supervisor": "", "target": {"SP": 14, "Tab": 0, "WR": 48, "Audio": 44, "Total": 106}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL05001430311", "name": "Ktronix Poblado", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 6, "Tab": 2, "WR": 45, "Audio": 51, "Total": 104}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO080919", "name": "Ktronix Girardot", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 11, "Tab": 0, "WR": 58, "Audio": 34, "Total": 103}}, {"channel": "ALKOSTO", "account": "OM", "code": "SGSCO027718", "name": "Ktronix Arkadia", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 6, "Tab": 0, "WR": 57, "Audio": 33, "Total": 96}}, {"channel": "ALKOSTO", "account": "OM", "code": "SCOL05001430314", "name": "Ktronix Tesoro", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 8, "Tab": 0, "WR": 53, "Audio": 34, "Total": 95}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110824", "name": "Cav Plaza Imperial T", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 26, "Tab": 16, "WR": 39, "Audio": 12, "Total": 93}}, {"channel": "CLARO", "account": "CLARO", "code": "scol54001110061", "name": "Cav Gran Colombia Cúcuta", "promoter": "", "supervisor": "Romero Mendez Jhon Alexander", "target": {"SP": 35, "Tab": 8, "WR": 36, "Audio": 13, "Total": 92}}, {"channel": "Falabella", "account": "OM", "code": "SCOL05001430197", "name": "Falabella Santafe Med", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 7, "Tab": 5, "WR": 50, "Audio": 29, "Total": 91}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430200", "name": "Falabella Unicentro", "promoter": "", "supervisor": "JULIAN URIBE ", "target": {"SP": 5, "Tab": 7, "WR": 63, "Audio": 15, "Total": 90}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110041", "name": "Cav Bogota Alamos", "promoter": "", "supervisor": "RUBEN CEDEÑO", "target": {"SP": 26, "Tab": 11, "WR": 35, "Audio": 14, "Total": 86}}, {"channel": "Falabella", "account": "OM", "code": "SCOL25175430571", "name": "Falabella Fontanar", "promoter": "", "supervisor": "RUBEN CEDEÑO", "target": {"SP": 5, "Tab": 9, "WR": 37, "Audio": 34, "Total": 85}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430046", "name": "Falabella Colina", "promoter": "", "supervisor": "JULIAN URIBE ", "target": {"SP": 8, "Tab": 6, "WR": 57, "Audio": 14, "Total": 85}}, {"channel": "Falabella", "account": "OM", "code": "SCOL05001430195", "name": "Falabella San Diego", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 4, "Tab": 6, "WR": 44, "Audio": 27, "Total": 81}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430181", "name": "Falabella Centro Mayor", "promoter": "", "supervisor": "TATIANA BARRAGAN ", "target": {"SP": 6, "Tab": 5, "WR": 44, "Audio": 26, "Total": 81}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430199", "name": "Falabella Titan", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 5, "Tab": 5, "WR": 56, "Audio": 15, "Total": 81}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110094", "name": "Cav Bogota Restrepo", "promoter": "", "supervisor": "LUISA ORDOÑEZ", "target": {"SP": 25, "Tab": 12, "WR": 31, "Audio": 11, "Total": 79}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110076", "name": "Cav Bogota Kennedy", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 30, "Tab": 10, "WR": 27, "Audio": 11, "Total": 78}}, {"channel": "CLARO", "account": "CLARO", "code": "scol05088110092", "name": "Cav Medellin Puerta Del Norte", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 25, "Tab": 10, "WR": 25, "Audio": 11, "Total": 71}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110071", "name": "Cav Bogota Fontibon", "promoter": "", "supervisor": "RUBEN CEDEÑO", "target": {"SP": 20, "Tab": 13, "WR": 35, "Audio": 9, "Total": 77}}, {"channel": "Falabella", "account": "OM", "code": "SCOL13001430187", "name": "Falabella El Castillo", "promoter": "", "supervisor": "Bermúdez Sariel Renzo Rafael", "target": {"SP": 1, "Tab": 7, "WR": 42, "Audio": 24, "Total": 74}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430196", "name": "Falabella Santa Fe Bog", "promoter": "", "supervisor": "JULIAN URIBE ", "target": {"SP": 7, "Tab": 6, "WR": 51, "Audio": 10, "Total": 74}}, {"channel": "Alkomprar", "account": "OM", "code": "SGSCO032510", "name": "Alkomprar Armenia", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 0, "Tab": 0, "WR": 35, "Audio": 39, "Total": 74}}, {"channel": "CLARO", "account": "CLARO", "code": "scol73001110262", "name": "Cav Ibague Centro", "promoter": "", "supervisor": "Luisa Ordoñez", "target": {"SP": 28, "Tab": 9, "WR": 25, "Audio": 11, "Total": 73}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110830", "name": "Cav Centro T", "promoter": "", "supervisor": "TATIANA BARRAGAN ", "target": {"SP": 30, "Tab": 10, "WR": 26, "Audio": 12, "Total": 78}}, {"channel": "Falabella", "account": "OM", "code": "SCOL76001430203", "name": "Falabella Wtc Cali", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 6, "Tab": 6, "WR": 40, "Audio": 21, "Total": 73}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110110", "name": "Cav Titan Plaza", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 22, "Tab": 9, "WR": 25, "Audio": 16, "Total": 72}}, {"channel": "Falabella", "account": "OM", "code": "SCOL68001430180", "name": "Falabella Caracoli", "promoter": "", "supervisor": "Romero Mendez Jhon Alexander", "target": {"SP": 5, "Tab": 6, "WR": 54, "Audio": 6, "Total": 71}}, {"channel": "CLARO", "account": "CLARO", "code": "scol17380110030", "name": "Cav La Dorada", "promoter": "", "supervisor": "Ruben cedeño", "target": {"SP": 25, "Tab": 7, "WR": 31, "Audio": 10, "Total": 73}}, {"channel": "CLARO", "account": "CLARO", "code": "scol41001110082", "name": "Cav Neiva San Pedro", "promoter": "", "supervisor": "Luisa Ordoñez", "target": {"SP": 21, "Tab": 11, "WR": 28, "Audio": 11, "Total": 71}}, {"channel": "CLARO", "account": "CLARO", "code": "scol68001110045", "name": "Cav Bucaramanga Cabecera", "promoter": "", "supervisor": "Romero Mendez Jhon Alexander", "target": {"SP": 22, "Tab": 12, "WR": 27, "Audio": 12, "Total": 73}}, {"channel": "Falabella", "account": "OM", "code": "SCOL76001430572", "name": "Falabella Jardin Plaza", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 6, "Tab": 3, "WR": 39, "Audio": 22, "Total": 70}}, {"channel": "CLARO", "account": "CLARO", "code": "scol68081110049", "name": "Cav Barrancabermeja", "promoter": "", "supervisor": "Romero Mendez Jhon Alexander", "target": {"SP": 18, "Tab": 8, "WR": 34, "Audio": 11, "Total": 71}}, {"channel": "CLARO", "account": "CLARO", "code": "SCOL73001110455", "name": "Cav Ibagué Fontainebleau", "promoter": "", "supervisor": "Luisa Ordoñez", "target": {"SP": 18, "Tab": 12, "WR": 20, "Audio": 13, "Total": 63}}, {"channel": "Falabella", "account": "OM", "code": "SCOL73001430210", "name": "Falabella Acqua", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 4, "Tab": 4, "WR": 44, "Audio": 15, "Total": 67}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110105", "name": "Cav Bogota Venecia", "promoter": "", "supervisor": "LUISA ORDOÑEZ", "target": {"SP": 23, "Tab": 10, "WR": 24, "Audio": 9, "Total": 66}}, {"channel": "CLARO", "account": "CLARO", "code": "SCOL25290110449", "name": "Cav Fusagasuga T", "promoter": "", "supervisor": "Luisa Ordoñez", "target": {"SP": 16, "Tab": 8, "WR": 25, "Audio": 16, "Total": 65}}, {"channel": "CLARO", "account": "CLARO", "code": "scol05266110682", "name": "Cav Medellin Sao Paulo", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 18, "Tab": 8, "WR": 28, "Audio": 12, "Total": 66}}, {"channel": "CLARO", "account": "CLARO", "code": "scol13001110613", "name": "Cav Cartagena Ejecutivos", "promoter": "", "supervisor": "Bermúdez Sariel Renzo Rafael", "target": {"SP": 18, "Tab": 8, "WR": 24, "Audio": 15, "Total": 65}}, {"channel": "CLARO", "account": "CLARO", "code": "scol05001110077", "name": "Cav Medellin Molinos", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 15, "Tab": 9, "WR": 26, "Audio": 12, "Total": 62}}, {"channel": "CLARO", "account": "CLARO", "code": "scol19001110089", "name": "Cav Popayan Plaza Colonial", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 15, "Tab": 10, "WR": 31, "Audio": 12, "Total": 68}}, {"channel": "Alkomprar", "account": "OM", "code": "SCOL73001430085", "name": "Alkomprar Ibague", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 0, "Tab": 0, "WR": 29, "Audio": 36, "Total": 65}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110037", "name": "Cav Plaza De Las Américas", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 19, "Tab": 9, "WR": 27, "Audio": 11, "Total": 66}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110112", "name": "Bosa Gran Plaza", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 20, "Tab": 8, "WR": 21, "Audio": 16, "Total": 65}}, {"channel": "CLARO", "account": "CLARO", "code": "scol50001110106", "name": "Cav Villavicencio Villa Centro", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 18, "Tab": 8, "WR": 28, "Audio": 11, "Total": 65}}, {"channel": "CLARO", "account": "CLARO", "code": "scol19290110069", "name": "Cav Florencia", "promoter": "", "supervisor": "Luisa Ordoñez", "target": {"SP": 15, "Tab": 8, "WR": 28, "Audio": 13, "Total": 64}}, {"channel": "CLARO", "account": "CLARO", "code": "scol85001110107", "name": "Cav Yopal", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 22, "Tab": 6, "WR": 24, "Audio": 12, "Total": 64}}, {"channel": "CLARO", "account": "CLARO", "code": "scol05001110080", "name": "Cav Medellin Av Colombia", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 25, "Tab": 11, "WR": 28, "Audio": 11, "Total": 75}}, {"channel": "CLARO", "account": "CLARO", "code": "scol15001110102", "name": "Cav Tunja La Sexta", "promoter": "", "supervisor": "Manuel Fernando", "target": {"SP": 20, "Tab": 9, "WR": 25, "Audio": 11, "Total": 65}}, {"channel": "CLARO", "account": "CLARO", "code": "scol25473110488", "name": "Cav Mosquera T", "promoter": "", "supervisor": "RUBEN CEDEÑO", "target": {"SP": 18, "Tab": 15, "WR": 23, "Audio": 12, "Total": 68}}, {"channel": "CLARO", "account": "CLARO", "code": "scol47001110097", "name": "Cav Santa Marta Buenavista", "promoter": "", "supervisor": "Bermúdez Sariel Renzo Rafael", "target": {"SP": 18, "Tab": 7, "WR": 28, "Audio": 11, "Total": 64}}, {"channel": "CLARO", "account": "CLARO", "code": "scol25307110450", "name": "Cav Girardot El Plaza", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 15, "Tab": 9, "WR": 32, "Audio": 10, "Total": 66}}, {"channel": "CLARO", "account": "CLARO", "code": "scol68001110046", "name": "Cav Bucaramanga Omnicentro", "promoter": "", "supervisor": "Romero Mendez Jhon Alexander", "target": {"SP": 25, "Tab": 8, "WR": 20, "Audio": 10, "Total": 63}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110058", "name": "Cav Bogota Calima", "promoter": "", "supervisor": "LUISA ORDOÑEZ", "target": {"SP": 15, "Tab": 9, "WR": 25, "Audio": 14, "Total": 63}}, {"channel": "CLARO", "account": "CLARO", "code": "scol76147110033", "name": "Cav Cartago", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 15, "Tab": 8, "WR": 28, "Audio": 11, "Total": 62}}, {"channel": "CLARO", "account": "CLARO", "code": "scol11001110681", "name": "Ensueño Madelena", "promoter": "", "supervisor": "INGRID DIAZ", "target": {"SP": 22, "Tab": 9, "WR": 24, "Audio": 11, "Total": 66}}, {"channel": "Alkomprar", "account": "OM", "code": "SCOL76001430010", "name": "Alkomprar Unico", "promoter": "", "supervisor": "Santiago Ayala Bahamon", "target": {"SP": 0, "Tab": 0, "WR": 28, "Audio": 31, "Total": 59}}, {"channel": "Alkomprar", "account": "OM", "code": "SCOL05088430002", "name": "Alkomprar Bello", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 0, "Tab": 0, "WR": 28, "Audio": 30, "Total": 58}}, {"channel": "Alkomprar", "account": "OM", "code": "SCOL05001430004", "name": "Alkomprar Florida", "promoter": "", "supervisor": "Estevez Perez Sneider", "target": {"SP": 0, "Tab": 0, "WR": 25, "Audio": 28, "Total": 53}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430033", "name": "Falabella Plaza Central", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 3, "Tab": 3, "WR": 28, "Audio": 18, "Total": 52}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430188", "name": "Falabella Galerias", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 2, "Tab": 2, "WR": 28, "Audio": 18, "Total": 50}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430194", "name": "Falabella Plaza Imperial", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 4, "Tab": 2, "WR": 31, "Audio": 13, "Total": 50}}, {"channel": "Falabella", "account": "OM", "code": "SCOL11001430189", "name": "Falabella Hayuelos Cl 20", "promoter": "", "supervisor": "VIVIANA", "target": {"SP": 3, "Tab": 4, "WR": 22, "Audio": 12, "Total": 41}}];
+
+let currentCat = "SP";
+let currentCuenta = "CLARO";
+let currentMode = "units";
+let selectedStoreIdx = null;
+
+const stepThreshold1 = 60;
+const stepThreshold2 = 100;
+let stepThreshold0 = 0;
+
+function syncThreshold0(){
+  stepThreshold0 = MIN_TABLE[currentCat][currentCuenta];
+}
+
+let unitsByCategory = { SP:{}, WR:{}, AUD:{}, Tab:{} };
+
+const fmt = n => "$" + Math.round(n).toLocaleString("es-CO");
+const fmtPct = n => (Math.round(n*10)/10) + "%";
+const fmtInt = n => Math.round(n).toLocaleString("es-CO");
+function norm(s){ return (s||"").toString().toLowerCase(); }
+
+function renderResults(query){
+  const list = document.getElementById("resultsList");
+  const meta = document.getElementById("searchMeta");
+  const q = norm(query).trim();
+  if(q === ""){ list.style.display = "none"; meta.textContent = ""; return; }
+  let matches = [];
+  STORES.forEach((s,i)=>{
+    const hay = norm(s.name+" "+s.code+" "+s.account+" "+s.channel+" "+s.promoter+" "+s.supervisor);
+    if(hay.includes(q)) matches.push(i);
+  });
+  meta.textContent = matches.length + " resultado(s)";
+  matches = matches.slice(0, 15);
+  list.innerHTML = "";
+  list.style.display = matches.length ? "block" : "none";
+  matches.forEach(i=>{
+    const s = STORES[i];
+    const row = document.createElement("div");
+    row.className = "result-row";
+    row.innerHTML = `<div><div>${s.name}</div><div class="rmeta">${s.channel} · ${s.code}</div></div>`;
+    row.onclick = ()=> selectStore(i);
+    list.appendChild(row);
+  });
+}
+document.getElementById("searchInput").addEventListener("input", e=> renderResults(e.target.value));
+
+function selectStore(i){
+  selectedStoreIdx = i;
+  const s = STORES[i];
+  document.getElementById("searchInput").value = "";
+  document.getElementById("resultsList").style.display = "none";
+  document.getElementById("searchMeta").textContent = "";
+  document.getElementById("storeChip").style.display = "flex";
+  document.getElementById("storeChipText").innerHTML = `<b>${s.name}</b> · ${s.channel} · ${s.code}`;
+
+  const cuenta = CHANNEL_TO_CUENTA[s.channel];
+  let note = "";
+  if(cuenta){
+    currentCuenta = cuenta;
+    buildCuentaButtons();
+    note = "Cuenta seleccionada automáticamente: " + cuenta + ".";
+  } else {
+    note = "No pude inferir la cuenta para el canal \"" + s.channel + "\" — selecciónala manualmente arriba.";
+  }
+  document.getElementById("storeAutofillNote").textContent = note;
+  updateAll();
+}
+
+document.getElementById("clearStoreBtn").onclick = ()=>{
+  selectedStoreIdx = null;
+  document.getElementById("storeChip").style.display = "none";
+  document.getElementById("storeAutofillNote").textContent = "";
+  updateAll();
+};
+
+function getCategoryTarget(catKey){
+  if(selectedStoreIdx === null) return 0;
+  const s = STORES[selectedStoreIdx];
+  return s.target[CAT_TO_TARGET_CAT[catKey]] || 0;
+}
+
+function buildCuentaButtons(){
+  const el = document.getElementById("cuentaButtons");
+  el.innerHTML = "";
+  CUENTAS.forEach(name=>{
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (name===currentCuenta ? " active":"");
+    btn.textContent = name;
+    btn.onclick = ()=>{ currentCuenta = name; buildCuentaButtons(); renderCuentaMins(); syncThreshold0(); updateAll(); };
+    el.appendChild(btn);
+  });
+  renderCuentaMins();
+}
+
+function renderCuentaMins(){
+  document.getElementById("cuentaMinsTitle").textContent = "Mínimos exigidos para " + currentCuenta + ":";
+  const grid = document.getElementById("cuentaMinsGrid");
+  grid.innerHTML = "";
+  CAT_KEYS.forEach(catKey=>{
+    const min = MIN_TABLE[catKey][currentCuenta];
+    const box = document.createElement("div");
+    box.className = "cuenta-min-box";
+    box.innerHTML = `<div class="cm-cat">${DATA[catKey].label}</div><div class="cm-val">${min === 0 ? "Sin mínimo" : "&gt;" + min + "%"}</div>`;
+    grid.appendChild(box);
+  });
+}
+
+function buildCatButtons(){
+  const el = document.getElementById("catButtons");
+  el.innerHTML = "";
+  CAT_KEYS.forEach(key=>{
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (key===currentCat ? " active":"");
+    btn.textContent = key;
+    btn.onclick = ()=>{
+      currentCat = key;
+      buildCatButtons();
+      buildGoalModelSelect();
+      buildUnitsTable();
+      syncThreshold0();
+      updateAll();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function buildGoalModelSelect(){
+  const sel = document.getElementById("goalModelSelect");
+  sel.innerHTML = "";
+  DATA[currentCat].models.forEach((m,i)=>{
+    const opt = document.createElement("option");
+    opt.value = i; opt.textContent = m[0];
+    sel.appendChild(opt);
+  });
+  sel.onchange = updateAll;
+}
+
+function getStep(pct){
+  if(pct < stepThreshold1) return 1;
+  if(pct <= stepThreshold2) return 2;
+  return 3;
+}
+
+document.getElementById("modeUnitsBtn").onclick = ()=>{
+  currentMode = "units";
+  document.getElementById("modeUnitsBtn").classList.add("active");
+  document.getElementById("modeGoalBtn").classList.remove("active");
+  document.getElementById("goalInputWrap").style.display = "none";
+  updateAll();
+};
+document.getElementById("modeGoalBtn").onclick = ()=>{
+  currentMode = "goal";
+  document.getElementById("modeGoalBtn").classList.add("active");
+  document.getElementById("modeUnitsBtn").classList.remove("active");
+  document.getElementById("goalInputWrap").style.display = "block";
+  updateAll();
+};
+document.getElementById("goalInput").addEventListener("input", updateAll);
+
+function buildUnitsTable(){
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  const catUnits = unitsByCategory[currentCat];
+  DATA[currentCat].models.forEach((m,i)=>{
+    const [name, s1, s2, s3] = m;
+    const tr = document.createElement("tr");
+    tr.id = "row_" + i;
+    tr.innerHTML = `
+      <td>${name}</td>
+      <td class="num step-col-1">${fmt(s1)}</td>
+      <td class="num step-col-2">${fmt(s2)}</td>
+      <td class="num step-col-3">${fmt(s3)}</td>
+      <td style="text-align:center;"><input type="number" min="0" value="${catUnits[i]||0}" style="width:80px; text-align:center; padding:6px;" id="qty_${i}"></td>
+      <td class="num" id="subtotal_${i}">$0</td>
+    `;
+    tbody.appendChild(tr);
+    document.getElementById("qty_"+i).addEventListener("input", (e)=>{
+      unitsByCategory[currentCat][i] = Math.max(0, parseInt(e.target.value) || 0);
+      updateAll();
+    });
+  });
+}
+
+function computeCategoryResult(catKey){
+  const catUnits = unitsByCategory[catKey];
+  const totalUnitsEntered = Object.values(catUnits).reduce((sum,u)=> sum + (u||0), 0);
+  const target = getCategoryTarget(catKey);
+  const known = target > 0;
+  const pct = known ? (totalUnitsEntered/target*100) : 100;
+
+  const qualifies = stepThreshold0 === 0 ? true : (known ? pct > stepThreshold0 : true);
+  const step = getStep(pct);
+
+  let total = 0;
+  const breakdown = [];
+  DATA[catKey].models.forEach((m,i)=>{
+    const [name, s1, s2, s3] = m;
+    const steps = [null, s1, s2, s3];
+    const commission = qualifies ? steps[step] : 0;
+    const units = catUnits[i] || 0;
+    const subtotal = commission * units;
+    total += subtotal;
+    if(units > 0) breakdown.push({name, units, commission, subtotal});
+  });
+  return { pct, qualifies, step, total, breakdown, totalUnitsEntered, target, known };
+}
+
+function updateAll(){
+  const result = computeCategoryResult(currentCat);
+  const { pct, qualifies, step, total, breakdown, totalUnitsEntered, target, known } = result;
+
+  const gateEl = document.getElementById("gateNote");
+
+  if(stepThreshold0 === 0){
+    gateEl.className = "gate-note pass";
+    gateEl.textContent = "Sin mínimo de cumplimiento en esta categoría — cualquier venta empieza a comisionar.";
+  } else if(!known){
+    gateEl.className = "gate-note pass";
+    gateEl.textContent = "Selecciona una tienda para calcular el mínimo real (>" + stepThreshold0 + "%). Mientras tanto se asume que el incentivo aplica.";
+  } else if(qualifies){
+    gateEl.className = "gate-note pass";
+    gateEl.textContent = "Con " + fmtInt(totalUnitsEntered) + " unidades ya cumples el mínimo en " + DATA[currentCat].label + " — el incentivo aplica.";
+  } else {
+    const unitsThreshold = Math.floor(stepThreshold0/100 * target) + 1;
+    const unitsRemaining = Math.max(0, unitsThreshold - totalUnitsEntered);
+    gateEl.className = "gate-note fail";
+    gateEl.textContent = "Para empezar a comisionar necesitas vender " + fmtInt(unitsThreshold) + " " + CAT_PLURAL[currentCat] + " en esta categoría (llevas " + fmtInt(totalUnitsEntered) + " en la tabla — te faltan " + fmtInt(unitsRemaining) + ").";
+  }
+
+  const miniEl = document.getElementById("miniSteps");
+  if(known && target > 0){
+    const minUnits = stepThreshold0 > 0 ? Math.floor(stepThreshold0/100 * target) + 1 : 0;
+    const step1Max = Math.max(minUnits - 1, Math.ceil(stepThreshold1/100 * target) - 1);
+    const step2Max = Math.max(step1Max, Math.floor(stepThreshold2/100 * target));
+    const step3Min = step2Max + 1;
+    const labels = [
+      "Paso 1: " + fmtInt(minUnits) + "–" + fmtInt(step1Max),
+      "Paso 2: " + fmtInt(step1Max+1) + "–" + fmtInt(step2Max),
+      "Paso 3: " + fmtInt(step3Min) + "+",
+    ];
+    miniEl.innerHTML = labels.map((label, idx)=>
+      `<span class="mini-step ${qualifies && idx+1===step ? 'active':''} ${!qualifies ? 'locked':''}">${label} uds</span>`
+    ).join("");
+  } else {
+    const labels = ["Paso 1: <60%", "Paso 2: 60–100%", "Paso 3: >100%"];
+    miniEl.innerHTML = labels.map((label, idx)=>
+      `<span class="mini-step ${qualifies && idx+1===step ? 'active':''} ${!qualifies ? 'locked':''}">${label}</span>`
+    ).join("") + `<span class="mini-step">Selecciona tienda para ver uds</span>`;
+  }
+
+  DATA[currentCat].models.forEach((m,i)=>{
+    const [name, s1, s2, s3] = m;
+    const steps = [null, s1, s2, s3];
+    const commission = qualifies ? steps[step] : 0;
+    const units = unitsByCategory[currentCat][i] || 0;
+    const row = document.getElementById("row_"+i);
+    [1,2,3].forEach(st=>{
+      row.querySelector(".step-col-"+st).classList.toggle("step-hit", qualifies && st===step);
+    });
+    document.getElementById("subtotal_"+i).textContent = fmt(commission * units);
+  });
+  document.getElementById("tableTotalCell").textContent = fmt(total);
+
+  let grandTotal = 0;
+  const catBoxes = CAT_KEYS.map(catKey=>{
+    const r = catKey === currentCat ? result : computeCategoryResult(catKey);
+    grandTotal += r.total;
+    return `<div class="cat-total-box ${catKey===currentCat ? 'current':''}"><div class="ctb-name">${catKey}</div><div class="ctb-val">${fmt(r.total)}</div></div>`;
+  }).join("");
+
+  const rc = document.getElementById("resultCard");
+  let breakdownHtml = breakdown.map(b =>
+    `<div class="result-line"><span>${b.name} × ${fmtInt(b.units)}</span><span>${fmt(b.subtotal)}</span></div>`
+  ).join("");
+  if(breakdown.length === 0){
+    breakdownHtml = `<div class="result-line"><span>Aún no ingresas unidades en la tabla de arriba</span><span>—</span></div>`;
+  }
+
+  let modeHtml;
+  if(currentMode === "units"){
+    modeHtml = `
+      <div class="badge">${qualifies ? ("Paso " + step) : "No aplica"} · ${DATA[currentCat].label}</div>
+      <div class="result-big">${fmt(total)}</div>
+      <div class="result-sub">Total a ganar en ${DATA[currentCat].label} sumando todos los modelos que ingresaste</div>
+      ${breakdownHtml}
+    `;
+  } else {
+    const goal = Math.max(0, parseFloat(document.getElementById("goalInput").value) || 0);
+    const focusIdx = parseInt(document.getElementById("goalModelSelect").value || 0);
+    const focusModel = DATA[currentCat].models[focusIdx];
+    const focusSteps = [null, focusModel[1], focusModel[2], focusModel[3]];
+    const focusCommission = qualifies ? focusSteps[step] : 0;
+    const remaining = Math.max(0, goal - total);
+    let extraUnits = null;
+    if(focusCommission > 0) extraUnits = Math.ceil(remaining / focusCommission);
+
+    let bigVal, subText;
+    if(!qualifies){
+      bigVal = "No aplica";
+      subText = "No cumples el mínimo de " + currentCuenta + " en esta categoría todavía.";
+    } else if(total >= goal){
+      bigVal = "¡Meta cumplida!";
+      subText = "Con lo que ya ingresaste en la tabla alcanzas los " + fmt(goal) + ".";
+    } else if(focusCommission === 0){
+      bigVal = "—";
+      subText = focusModel[0] + " no paga comisión en este paso — elige otro modelo para completar.";
+    } else {
+      bigVal = fmtInt(extraUnits) + " uds de " + focusModel[0];
+      subText = "Unidades adicionales de " + focusModel[0] + " para llegar a " + fmt(goal) + " en total.";
+    }
+
+    modeHtml = `
+      <div class="badge">${qualifies ? ("Paso " + step) : "No aplica"} · ${DATA[currentCat].label}</div>
+      <div class="result-big">${bigVal}</div>
+      <div class="result-sub">${subText}</div>
+      <div class="result-line"><span>Monto que quieres ganar</span><span>${fmt(goal)}</span></div>
+      <div class="result-line"><span>Ya ganado con lo ingresado arriba</span><span>${fmt(total)}</span></div>
+      <div class="result-line"><span>Te falta</span><span>${fmt(remaining)}</span></div>
+      ${breakdownHtml}
+    `;
+  }
+
+  rc.innerHTML = `
+    <h2>Resultado — ${DATA[currentCat].label}</h2>
+    ${modeHtml}
+    <div class="cat-total-grid">${catBoxes}</div>
+    <div class="grand-total-line">
+      <span>Total general (todas las categorías)</span>
+      <span class="gt-val">${fmt(grandTotal)}</span>
+    </div>
+  `;
+}
+
+buildCuentaButtons();
+buildCatButtons();
+buildGoalModelSelect();
+buildUnitsTable();
+syncThreshold0();
+updateAll();
+})();
+</script>
+
+</body>
+</html>
