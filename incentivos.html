@@ -378,6 +378,10 @@
 
   <div class="card">
     <h2>¿Cuántas unidades de cada modelo necesitas vender?</h2>
+    <p style="font-size:12.5px; color:var(--ink); opacity:0.75; margin-top:-6px; margin-bottom:10px; line-height:1.5;">
+      Si vendes en esta categoría modelos que no tienen incentivo propio, agrégalos en la fila "Otros (sin incentivo)" —
+      no pagan comisión, pero sí cuentan para tu % de cumplimiento y para llegar a la base mínima.
+    </p>
 
     <div class="gate-note" id="gateNote"></div>
     <div class="mini-steps" id="miniSteps"></div>
@@ -872,6 +876,24 @@ function buildUnitsTable(){
       unitsByCategory[currentCat][i] = Math.max(0, parseInt(e.target.value) || 0);
       updateAll();
     });
+  });
+  // fila especial: unidades vendidas en esta categoría de modelos SIN incentivo propio.
+  // No generan comisión, pero sí cuentan para llegar a la base mínima y al % de cumplimiento.
+  const trOther = document.createElement("tr");
+  trOther.id = "row_other";
+  trOther.style.background = "var(--gray-bg, #f4f4f6)";
+  trOther.innerHTML = `
+    <td><i>Otros (sin incentivo)</i></td>
+    <td class="num">—</td>
+    <td class="num">—</td>
+    <td class="num">—</td>
+    <td style="text-align:center;"><input type="number" min="0" value="${catUnits.other||0}" style="width:80px; text-align:center; padding:6px;" id="qty_other"></td>
+    <td class="num">$0</td>
+  `;
+  tbody.appendChild(trOther);
+  document.getElementById("qty_other").addEventListener("input", (e)=>{
+    unitsByCategory[currentCat].other = Math.max(0, parseInt(e.target.value) || 0);
+    updateAll();
   });
 }
 
